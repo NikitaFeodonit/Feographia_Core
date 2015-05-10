@@ -26,3 +26,8 @@
 *.exe
 *.out
 *.app
+
+# from Android Studio
+/build
+/src/main/libs
+/src/main/obj
