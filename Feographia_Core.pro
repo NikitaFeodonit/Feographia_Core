@@ -19,18 +19,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*******************************************************************************
 
+
+# Make following for project configuration:
+#
+# in Project -> Build Settings -> Add -> Build -> name "ndk-build"
+# Shadow build == true
+# Build dir (relative to the main project) == E:\Dev\projects\Android\Feographia_Android\Feographia_Core\src\main
+#
+# Build Steps -- all delete and disable. Add build step -- Custom process step
+# Command: (relative to the Crystax NDK) E:\Dev\Tools\Android\crystax-ndk-10.1.0\ndk-build.cmd
+# Arguments:
+# Working dir: %{buildDir}
+#
+# Clean steps -- all delete and disable. Add clean step -- Custom process step
+# Command: (relative to the Crystax NDK) E:\Dev\Tools\Android\crystax-ndk-10.1.0\ndk-build.cmd
+# Arguments: clean
+# Working dir: %{buildDir}
+
+
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-HEADERS += gps.hpp \
+HEADERS += $$PWD/src/main/jni/gps.hpp \
 
-SOURCES += gps.cpp \
-           test.cpp
+SOURCES += $$PWD/src/main/jni/gps.cpp \
+           $$PWD/src/main/jni/test.cpp
 
-OTHER_FILES += Android.mk \
-               Application.mk
+OTHER_FILES += $$PWD/src/main/jni/Android.mk \
+               $$PWD/src/main/jni/Application.mk
 
 # only for Qt Creator self
 INCLUDEPATH += E:/Dev/Tools/Android/crystax-ndk-10.1.0/sources/boost/1.57.0/include
