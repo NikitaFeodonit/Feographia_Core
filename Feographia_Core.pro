@@ -50,8 +50,5 @@ SOURCES += $$PWD/src/main/jni/gps.cpp \
 OTHER_FILES += $$PWD/src/main/jni/Android.mk \
                $$PWD/src/main/jni/Application.mk
 
-# only for Qt Creator self
+# only for the QtCreator itself, relative to the Crystax NDK
 INCLUDEPATH += E:/Dev/Tools/Android/crystax-ndk-10.1.0/sources/boost/1.57.0/include
-
-#include(deployment.pri)
-#qtcAddDeployment()
