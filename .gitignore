@@ -27,10 +27,15 @@
 *.out
 *.app
 
+
 # from Android Studio
 /build
 /src/main/libs
 /src/main/obj
+
+/android-nkd/libs
+/android-nkd/obj
+
 
 # QtCreator files
 *.pro.user

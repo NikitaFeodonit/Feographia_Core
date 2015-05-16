@@ -42,29 +42,55 @@ android {
     productFlavors {
     }
 
+
+// default project structure
+//    sourceSets.main.manifest.srcFile 'main/AndroidManifest.xml'
+//
+//    sourceSets.main.java.srcDirs = ['src/main/java']
+//    sourceSets.main.res.srcDirs = ['src/main/res'] // android resources
+//    sourceSets.main.assets.srcDirs = ['src/main/assets']
+//
+//    sourceSets.main.jni.srcDirs = ['src/main/jni']
+//    sourceSets.main.jniLibs.srcDirs = ['src/main/libs']
+//
+//    sourceSets.main.resources.srcDirs = ['src/resources'] // java resources
+//    sourceSets.main.aidl.srcDirs = ['src/main/aidl']
+//    sourceSets.main.renderscript.srcDirs = ['src/main/rs']
+//
+//    sourceSets.androidTest.setRoot('src/androidTest') // tests
+
+    sourceSets.androidTest.setRoot('android-nkd/androidTest') // tests
+
+    sourceSets.main.manifest.srcFile 'android-nkd/AndroidManifest.xml'
+    sourceSets.main.res.srcDirs = ['android-nkd/res'] // android resources
+
     sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-    sourceSets.main.jniLibs.srcDir 'src/main/libs'
+
+// commented for prevent error "duplicate files during packaging of APK"
+//    sourceSets.main.jniLibs.srcDir 'android-nkd/libs'
 
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
-        workingDir file('src/main')
+        workingDir file('android-nkd')
         commandLine getNdkBuildCmd()
     }
 
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
-    }
+// commented -- we do not need, since the compilation is run from Feographia_Core_Android module
+//    tasks.withType(JavaCompile) {
+//        compileTask -> compileTask.dependsOn ndkBuild
+//    }
 
     task cleanNative(type: Exec) {
-        workingDir file('src/main')
+        workingDir file('android-nkd')
         commandLine getNdkBuildCmd(), 'clean'
     }
 
-    clean.dependsOn cleanNative
+// commented -- we do not need, since the compilation is run from Feographia_Core_Android module
+//    clean.dependsOn cleanNative
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 def getNdkDir() {
