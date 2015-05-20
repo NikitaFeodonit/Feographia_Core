@@ -37,9 +37,9 @@ LOCAL_SRC_FILES := ../../src/Feographia_Core/gps.cpp \
 #LOCAL_SRC_FILES += relative/dir/probe.cpp
 
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../src/Feographia_Core
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../src
 
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../../src/Feographia_Core
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../../src
 
 #LOCAL_C_INCLUDES := ../../src/Feographia_Core
 
