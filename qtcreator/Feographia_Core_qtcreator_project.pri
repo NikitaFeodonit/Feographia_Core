@@ -20,9 +20,10 @@
 #*******************************************************************************
 
 
-# QtCreator project file
-
-# Make following in QtCreator for project configuration:
+# Warning: to build the project uses the android-nkd/jni/Android.mk,
+#          this pro-file is for the QtCreator itself only
+#
+# For building from QtCreator make following for project configuration in QtCreator:
 #
 # in Project -> Build Settings -> Add -> Build -> name "ndk-build"
 # Shadow build == true
@@ -57,6 +58,6 @@ OTHER_FILES += \
     $$PWD/../android-nkd/jni/Android.mk \
     $$PWD/../android-nkd/jni/Application.mk \
 
-# only for the QtCreator itself, relative to the Crystax NDK
+# from Crystax NDK
 INCLUDEPATH += \
-    E:/Dev/Tools/Android/crystax-ndk-10.1.0/sources/boost/1.57.0/include
+    $(ANDROID_NDK_ROOT)/sources/boost/1.57.0/include
