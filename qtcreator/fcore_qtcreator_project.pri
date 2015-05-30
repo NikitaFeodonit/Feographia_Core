@@ -49,10 +49,10 @@ INCLUDEPATH += \
     $$PWD/../src
 
 HEADERS += \
-    $$PWD/../src/Feographia_Core/gps.hpp \
+    $$PWD/../src/fcore/fcore.hpp
 
 SOURCES += \
-    $$PWD/../src/Feographia_Core/gps.cpp \
+    $$PWD/../src/fcore/fcore.cpp
 
 OTHER_FILES += \
     $$PWD/../android-nkd/jni/Android.mk \
