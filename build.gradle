@@ -36,7 +36,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'android-nkd/proguard-rules.pro'
         }
     }
     productFlavors {
@@ -59,15 +59,14 @@ android {
 //
 //    sourceSets.androidTest.setRoot('src/androidTest') // tests
 
+
     sourceSets.androidTest.setRoot('android-nkd/androidTest') // tests
 
     sourceSets.main.manifest.srcFile 'android-nkd/AndroidManifest.xml'
     sourceSets.main.res.srcDirs = ['android-nkd/res'] // android resources
 
     sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-
-// commented for prevent error "duplicate files during packaging of APK"
-//    sourceSets.main.jniLibs.srcDir 'android-nkd/libs'
+    sourceSets.main.jniLibs.srcDir 'android-nkd/libs'
 
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
@@ -75,18 +74,16 @@ android {
         commandLine getNdkBuildCmd()
     }
 
-// commented -- we do not need, since the compilation is run from Feographia_Core_Android module
-//    tasks.withType(JavaCompile) {
-//        compileTask -> compileTask.dependsOn ndkBuild
-//    }
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn ndkBuild
+    }
 
     task cleanNative(type: Exec) {
         workingDir file('android-nkd')
         commandLine getNdkBuildCmd(), 'clean'
     }
 
-// commented -- we do not need, since the compilation is run from Feographia_Core_Android module
-//    clean.dependsOn cleanNative
+    clean.dependsOn cleanNative
 }
 
 dependencies {

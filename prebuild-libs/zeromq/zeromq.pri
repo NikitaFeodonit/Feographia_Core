@@ -19,27 +19,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*******************************************************************************
 
-LOCAL_PATH := $(call my-dir)
 
-include $(CLEAR_VARS)
+TEMPLATE = app
+CONFIG += console
+CONFIG -= app_bundle
+CONFIG -= qt
 
-LOCAL_MODULE    := fcore
-#LOCAL_MODULE_FILENAME := libfcore
+INCLUDEPATH += \
+    $$PWD/include
 
-LOCAL_SRC_FILES := ../../src/fcore/fcore.cpp \
+HEADERS += \
+    $$PWD/include/zmq.h \
+    $$PWD/include/zmq_utils.h \
+    $$PWD/include/zmq.hpp \
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../src
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../../src
+SOURCES += \
 
-TARGET_PLATFORM := android-9
-
-LOCAL_STATIC_LIBRARIES := boost_thread_static
-LOCAL_STATIC_LIBRARIES += boost_system_static
-LOCAL_STATIC_LIBRARIES += zeromq-prebuilt
-
-include $(BUILD_STATIC_LIBRARY)
-
-$(call import-module,boost/1.57.0)
-
-$(call import-add-path,$(LOCAL_PATH)/../../..)
-$(call import-module,libs/zeromq/android-nkd/jni)
+OTHER_FILES += \
+    $$PWD/Android.mk \

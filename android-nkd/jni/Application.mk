@@ -25,6 +25,27 @@ APP_ABI := armeabi-v7a
 APP_PLATFORM := android-9
 NDK_TOOLCHAIN_VERSION := 4.9
 
+APP_BUILD_SCRIPT := ../src/Android.mk
+
+#APP_CFLAGS :=
+#APP_CPPFLAGS :=
+#APP_LDFLAGS :=
+#APP_GNUSTL_CPP_FEATURES := exceptions rtti
+
+
+# This optional variable can be defined to either 'release' or 'debug'.
+# This is used to alter the optimization level when building your application's modules.
+# A 'release' mode is the default, and will generate highly optimized binaries.
+# The 'debug' mode will generate un-optimized binaries which are much easier to debug.
+# Note that if your application is debuggable (i.e. if your manifest sets the android:debuggable attribute to "`true`" in its <application> tag),
+# the default will be 'debug' instead of 'release'. This can be overridden by setting APP_OPTIM to 'release'.
+# Note that it is possible to debug both 'release' and 'debug' binaries,
+# but the 'release' builds tend to provide less information during debugging sessions:
+# some variables are optimized out and can't be inspected, code re-ordering can make stepping through the code difficult, stack traces may not be reliable, etc...
+#APP_OPTIM := release
+#APP_OPTIM := debug
+
+
 # Set this variable to 'true' when your module has a very high number of sources and/or dependent static or shared libraries.
 # This forces the build system to use an intermediate list file, and use it with the library archiver or static linker with the @ syntax.
 # This can be useful on Windows, where the command-line only accepts a maximum of 8191 characters, which can be too small for complex projects.

@@ -22,7 +22,7 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ru.feographia.core"
+    package="ru.feographia.core.android"
     >
 
     <application
