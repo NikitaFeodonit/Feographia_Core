@@ -47,3 +47,6 @@ prebuild-libs/capnproto-cpp/lib/*
 
 prebuild-libs/zeromq/include/*
 prebuild-libs/zeromq/lib/*
+
+prebuild-libs/jzmq/include/*
+prebuild-libs/jzmq/lib/*

@@ -24,9 +24,9 @@
 
 
 void fcoreMain();
-void fcoreRunMainThread();
+void* fcoreRunMainThread();
 
-void fcoreTestZeroMqReq();
+void fcoreTestZeroMqReq(long context_p);
 
 
 #endif // FCORE_HPP

@@ -25,38 +25,51 @@
 #include "fcore.hpp"
 
 
-void fcoreMain()
+class FcoreMain
 {
-    //  Prepare our context and socket
-    zmq::context_t context (1);
-    zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://127.0.0.1:7575");
+public:
+        void operator()(zmq::context_t* context)
+        {
+            //  Prepare our context and socket
+//            zmq::socket_t socket (*context, ZMQ_REP);
+//            socket.bind ("tcp://127.0.0.1:7575");
+            zmq::socket_t socket (*context, ZMQ_PAIR);
+            socket.bind ("inproc://step3");
 
-    while (true) {
-        zmq::message_t request;
+            while (true) {
+                zmq::message_t request;
 
-        //  Wait for next request from client
-        socket.recv (&request);
+                //  Wait for next request from client
+                socket.recv (&request);
 
-        //  Send reply back to client
-        zmq::message_t reply (5);
-        memcpy ((void *) reply.data (), "World", 5);
-        socket.send (reply);
-    }
+                //  Send reply back to client
+                zmq::message_t reply (5);
+                memcpy ((void *) reply.data (), "World", 5);
+                socket.send (reply);
+                }
+        }
+};
+
+
+void* fcoreRunMainThread()
+{
+    FcoreMain fcoreMain;
+    zmq::context_t* context = new zmq::context_t(1);
+    boost::thread fcoreMainThread(fcoreMain, context);
+
+    void* ptr = *context; // void* ptr = context->ptr;
+    return ptr;
 }
 
 
-void fcoreRunMainThread()
+void fcoreTestZeroMqReq(long context_p)
 {
-    boost::thread fcoreMainThread(fcoreMain);
-}
+    zmq::context_t* context = (zmq::context_t*) context_p;
 
-
-void fcoreTestZeroMqReq()
-{
-    zmq::context_t context (1);
-    zmq::socket_t socket (context, ZMQ_REQ);
-    socket.connect ("tcp://127.0.0.1:7575");
+//    zmq::socket_t socket (*context, ZMQ_REQ);
+//    socket.connect ("tcp://127.0.0.1:7575");
+    zmq::socket_t socket (*context, ZMQ_PAIR);
+    socket.connect ("inproc://step3");
 
     for (int request_nbr = 0; request_nbr < 5000; ++request_nbr) {
         zmq::message_t request (6);

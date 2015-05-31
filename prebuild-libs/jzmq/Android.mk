@@ -22,40 +22,7 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-
-
-LOCAL_MODULE    := fcore
-#LOCAL_MODULE_FILENAME := libfcore
-
-
-LOCAL_SRC_FILES := fcore/fcore.cpp
-LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
-
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
-
-
-TARGET_PLATFORM := android-9
-
-#LOCAL_CPP_FEATURES := rtti
-#LOCAL_CPP_FEATURES += exceptions
-LOCAL_CPPFLAGS += -fexceptions
-LOCAL_CPPFLAGS += -frtti
-
-#LOCAL_EXPORT_CFLAGS := -DFOO=1
-#LOCAL_EXPORT_CPPFLAGS := -DFOO=1
-
-LOCAL_LDLIBS := -llog
-
-LOCAL_STATIC_LIBRARIES := zeromq-prebuilt
-LOCAL_STATIC_LIBRARIES += boost_thread_static
-LOCAL_STATIC_LIBRARIES += boost_system_static
-
-LOCAL_WHOLE_STATIC_LIBRARIES := jzmq-prebuilt
-
-include $(BUILD_SHARED_LIBRARY)
-
-$(call import-add-path,$(LOCAL_PATH)/..)
-$(call import-module,prebuild-libs/zeromq)
-$(call import-module,prebuild-libs/jzmq)
-$(call import-module,boost/1.57.0)
+LOCAL_MODULE := jzmq-prebuilt
+LOCAL_SRC_FILES := lib/libjzmq.a
+#LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+include $(PREBUILT_STATIC_LIBRARY)

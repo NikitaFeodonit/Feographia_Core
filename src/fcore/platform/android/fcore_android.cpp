@@ -28,16 +28,20 @@
 
 
 extern "C"
-void Java_ru_feographia_FCore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
+jlong Java_ru_feographia_FCore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
     LOG("main thread: %s", "starting");
-    fcoreRunMainThread();
+
+    jlong context_p = (jlong) fcoreRunMainThread();
+
     LOG("main thread: %s", "started");
+
+    return context_p;
 }
 
 
 extern "C"
-void Java_ru_feographia_FCore_fcoreTestZeroMqReq(JNIEnv* env, jobject thiz)
+void Java_ru_feographia_FCore_fcoreTestZeroMqReq(JNIEnv* env, jobject thiz, jlong cp)
 {
-    fcoreTestZeroMqReq();
+    fcoreTestZeroMqReq((long) cp);
 }
