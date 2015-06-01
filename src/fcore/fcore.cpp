@@ -28,12 +28,12 @@
 class FcoreMain
 {
 public:
-        void operator()(zmq::context_t* context)
+        void operator()(zmq::context_t* zmqContext)
         {
             //  Prepare our context and socket
 //            zmq::socket_t socket (*context, ZMQ_REP);
 //            socket.bind ("tcp://127.0.0.1:7575");
-            zmq::socket_t socket (*context, ZMQ_PAIR);
+            zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
             socket.bind ("inproc://step3");
 
             while (true) {
@@ -54,21 +54,18 @@ public:
 void* fcoreRunMainThread()
 {
     FcoreMain fcoreMain;
-    zmq::context_t* context = new zmq::context_t(1);
-    boost::thread fcoreMainThread(fcoreMain, context);
+    zmq::context_t* zmqContext = new zmq::context_t(1);
+    boost::thread fcoreMainThread(fcoreMain, zmqContext);
 
-    void* ptr = *context; // void* ptr = context->ptr;
-    return ptr;
+    return *zmqContext; // return zmqContext->ptr;
 }
 
 
-void fcoreTestZeroMqReq(long context_p)
+void fcoreTestZeroMqReq(zmq::context_t* zmqContext)
 {
-    zmq::context_t* context = (zmq::context_t*) context_p;
-
 //    zmq::socket_t socket (*context, ZMQ_REQ);
 //    socket.connect ("tcp://127.0.0.1:7575");
-    zmq::socket_t socket (*context, ZMQ_PAIR);
+    zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
     socket.connect ("inproc://step3");
 
     for (int request_nbr = 0; request_nbr < 5000; ++request_nbr) {

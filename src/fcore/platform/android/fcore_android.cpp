@@ -20,6 +20,7 @@
  ******************************************************************************/
 
 #include <jni.h>
+#include <zmq.hpp>
 
 #include <android/log.h>
 #define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "fcore", fmt, ##__VA_ARGS__)
@@ -32,16 +33,18 @@ jlong Java_ru_feographia_FCore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
     LOG("main thread: %s", "starting");
 
-    jlong context_p = (jlong) fcoreRunMainThread();
+    jlong zmqContextPointer = (jlong) fcoreRunMainThread();
 
     LOG("main thread: %s", "started");
 
-    return context_p;
+    return zmqContextPointer;
 }
 
 
 extern "C"
-void Java_ru_feographia_FCore_fcoreTestZeroMqReq(JNIEnv* env, jobject thiz, jlong cp)
+void Java_ru_feographia_FCore_fcoreTestZeroMqReq(JNIEnv* env, jobject thiz, jlong zmqContextPointer)
 {
-    fcoreTestZeroMqReq((long) cp);
+//    zmq::context_t* existingContext = new zmq::context_t();
+//    existingContext->ptr = zmqContextPointer;
+//    fcoreTestZeroMqReq(existingContext);
 }

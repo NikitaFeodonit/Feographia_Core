@@ -22,11 +22,13 @@
 #ifndef FCORE_HPP
 #define FCORE_HPP
 
+#include <zmq.hpp>
+
 
 void fcoreMain();
 void* fcoreRunMainThread();
 
-void fcoreTestZeroMqReq(long context_p);
+void fcoreTestZeroMqReq(zmq::context_t* zmqContext);
 
 
 #endif // FCORE_HPP
