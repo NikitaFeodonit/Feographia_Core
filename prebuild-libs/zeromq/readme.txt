@@ -1,5 +1,5 @@
 
-Building ZeroMQ library with CrystaX NDK in Msys2 on Windows
+Building ZeroMQ library with CrystaX NDK in Msys2 on Windows for Android
 (this is similar on the other systems)
 
 
@@ -42,14 +42,13 @@ make -j8 && make install
 cp $OUTPUT_DIR/include <Feographia_Android>/fcore/prebuild-libs/zeromq
 cp $OUTPUT_DIR/lib <Feographia_Android>/fcore/prebuild-libs/zeromq
 
-must be so:
-
-prebuild-libs/zeromq
-    /include
-    /lib
-    Android.mk
-    zeromq.pri
-    readme.txt
+# must be like so:
+# <Feographia_Android>/fcore/prebuild-libs/zeromq
+#     /include
+#     /lib
+#     Android.mk
+#     zeromq.pri
+#     readme.txt
 
 
 4. Issue for autogen.sh

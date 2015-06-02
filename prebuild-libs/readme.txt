@@ -1,5 +1,7 @@
 
-Building prebuilt libraries
+Building prebuilt libraries with CrystaX NDK in Msys2 on Windows for Android
+(this is similar on the other systems)
+
 
 1. Installing Android NDK Standalone Toolchain
 

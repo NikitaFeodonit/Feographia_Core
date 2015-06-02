@@ -1,5 +1,5 @@
 
-Building capnproto library with CrystaX NDK in Msys2 on Windows
+Building capnproto library with CrystaX NDK in Msys2 on Windows for Android
 (this is similar on the other systems)
 
 
@@ -25,11 +25,10 @@ make -j8 && make install
 cp /local32/capnproto-c++-0.5.2_inst/include <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
 cp /local32/capnproto-c++-0.5.2_inst/lib <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
 
-must be so:
-
-prebuild-libs/capnproto-cpp
-    /include
-    /lib
-    Android.mk
-    capnproto-cpp.pri
-    readme.txt
+# must be like so:
+# <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
+#     /include
+#     /lib
+#     Android.mk
+#     capnproto-cpp.pri
+#     readme.txt
