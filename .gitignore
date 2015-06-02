@@ -39,14 +39,3 @@
 
 # QtCreator files
 *.pro.user
-
-
-# prebuild libs
-prebuild-libs/capnproto-cpp/include/*
-prebuild-libs/capnproto-cpp/lib/*
-
-prebuild-libs/jzmq/include/*
-prebuild-libs/jzmq/lib/*
-
-prebuild-libs/zeromq/include/*
-prebuild-libs/zeromq/lib/*
