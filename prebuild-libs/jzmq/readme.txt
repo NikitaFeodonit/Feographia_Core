@@ -3,11 +3,15 @@ Building jzmq library with CrystaX NDK in Msys2 on Windows for Android
 (this is similar on the other systems)
 
 
-1. Build ZeroMQ library, see
+1. Installing Android NDK Standalone Toolchain and variables, see
+<Feographia_Android>/fcore/prebuild-libs/readme.txt
+
+
+2. Build ZeroMQ library, see
 <Feographia_Android>/fcore/prebuild-libs/zeromq/readme.txt
 
 
-2. Get sources of jzmq library
+3. Get sources of jzmq library
 (All variables are set by 1st step)
 
 cd /local32
@@ -15,13 +19,16 @@ git clone https://github.com/zeromq/jzmq.git
 cd jzmq
 
 
-3. patch sources
+4. patch sources
 
 cp <Feographia_Android>/fcore/prebuild-libs/jzmq/patch-all ./
 patch -p1 <patch-all
 
 
-4. Building
+5. Building
+
+# set variable where installed zeromq
+export OUTPUT_DIR=/local32/zeromq4-1_inst
 
 ./autogen.sh
 
@@ -30,7 +37,7 @@ patch -p1 <patch-all
 make && make install
 
 
-5. Copying to project
+6. Copying to project
 
 cp /local32/jzmq_inst/lib <Feographia_Android>/fcore/prebuild-libs/jzmq
 

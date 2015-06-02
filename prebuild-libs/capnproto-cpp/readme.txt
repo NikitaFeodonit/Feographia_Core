@@ -3,7 +3,7 @@ Building capnproto library with CrystaX NDK in Msys2 on Windows for Android
 (this is similar on the other systems)
 
 
-1. Installing Android NDK Standalone Toolchain, see
+1. Installing Android NDK Standalone Toolchain and variables, see
 <Feographia_Android>/fcore/prebuild-libs/readme.txt
 
 
