@@ -23,6 +23,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'com.android.library'
 
+
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
@@ -68,27 +69,40 @@ android {
     sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
     sourceSets.main.jniLibs.srcDir 'android-nkd/libs'
 
+
+    task capnpBuild(type: Exec) {
+        workingDir file('src/fcore/capnproto')
+        commandLine getWinCmd(), getWinCmdArg(), getCapnpCmd()
+    }
+
+
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
+        dependsOn capnpBuild
         workingDir file('android-nkd')
         commandLine getNdkBuildCmd()
     }
 
+
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn ndkBuild
     }
+
 
     task cleanNative(type: Exec) {
         workingDir file('android-nkd')
         commandLine getNdkBuildCmd(), 'clean'
     }
 
+
     clean.dependsOn cleanNative
 }
+
 
 dependencies {
 //    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
 
 def getNdkDir() {
     if (System.env.ANDROID_NDK_ROOT != null)
@@ -103,10 +117,36 @@ def getNdkDir() {
     return ndkdir
 }
 
+
 def getNdkBuildCmd() {
     def ndkbuild = getNdkDir() + "/ndk-build"
     if (Os.isFamily(Os.FAMILY_WINDOWS))
         ndkbuild += ".cmd"
 
     return ndkbuild
+}
+
+
+def getWinCmd() {
+    def winCmd = ""
+    if (Os.isFamily(Os.FAMILY_WINDOWS))
+        winCmd = "cmd"
+    return winCmd
+}
+
+
+def getWinCmdArg() {
+    def winCmdArg = ""
+    if (Os.isFamily(Os.FAMILY_WINDOWS))
+        winCmdArg = "/c"
+    return winCmdArg
+}
+
+
+def getCapnpCmd() {
+// TODO: for linux
+    def capnpCmd = ""
+    if (Os.isFamily(Os.FAMILY_WINDOWS))
+        capnpCmd = "capnp-main.cmd"
+    return capnpCmd
 }

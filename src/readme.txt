@@ -1,3 +1,8 @@
+TODO: first run
+cd ./fcore/capnproto
+./capnp-main.cmd
+
+
 For building in the QtCreator
 
 
