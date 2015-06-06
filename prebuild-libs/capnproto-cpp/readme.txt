@@ -32,3 +32,8 @@ cp /local32/capnproto-c++-0.5.2_inst/lib <Feographia_Android>/fcore/prebuild-lib
 #     Android.mk
 #     capnproto-cpp.pri
 #     readme.txt
+
+
+4. Copying compiled tools for Windows
+
+cp capnproto-c++-win32-0.5.2.zip/capnproto-tools-win32-0.5.2/*.exe <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp/tools
