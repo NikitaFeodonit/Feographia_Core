@@ -1,3 +1,4 @@
 # prebuild lib
-/include/*
-/lib/*
+/include
+/lib
+/tools
