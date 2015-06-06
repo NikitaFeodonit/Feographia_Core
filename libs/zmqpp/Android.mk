@@ -24,44 +24,37 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 
-LOCAL_MODULE    := fcore
+LOCAL_MODULE    := zmqpp
 #LOCAL_MODULE_FILENAME := libfcore
 
 
-LOCAL_SRC_FILES := fcore/fcore.cpp
-LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
+LOCAL_SRC_FILES := src/zmqpp/actor.cpp
+LOCAL_SRC_FILES += src/zmqpp/auth.cpp
+LOCAL_SRC_FILES += src/zmqpp/context.cpp
+LOCAL_SRC_FILES += src/zmqpp/curve.cpp
+LOCAL_SRC_FILES += src/zmqpp/frame.cpp
+LOCAL_SRC_FILES += src/zmqpp/message.cpp
+LOCAL_SRC_FILES += src/zmqpp/poller.cpp
+LOCAL_SRC_FILES += src/zmqpp/reactor.cpp
+LOCAL_SRC_FILES += src/zmqpp/signal.cpp
+LOCAL_SRC_FILES += src/zmqpp/socket.cpp
+LOCAL_SRC_FILES += src/zmqpp/z85.cpp
+LOCAL_SRC_FILES += src/zmqpp/zap_request.cpp
+LOCAL_SRC_FILES += src/zmqpp/zmqpp.cpp
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/src
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/src
 
 
 TARGET_PLATFORM := android-9
 
-#LOCAL_CPP_FEATURES := rtti
-#LOCAL_CPP_FEATURES += exceptions
-LOCAL_CPPFLAGS += -fexceptions
-LOCAL_CPPFLAGS += -frtti
-
-#LOCAL_EXPORT_CFLAGS := -DFOO=1
-#LOCAL_EXPORT_CPPFLAGS := -DFOO=1
-
-LOCAL_LDLIBS := -llog
+LOCAL_CPPFLAGS += -fPIC
 
 LOCAL_STATIC_LIBRARIES := zmq-prebuilt
-LOCAL_STATIC_LIBRARIES += zmqpp
-LOCAL_STATIC_LIBRARIES += czmq-prebuilt
-LOCAL_STATIC_LIBRARIES += czmqpp-prebuilt
-LOCAL_STATIC_LIBRARIES += capnp-prebuilt
-LOCAL_STATIC_LIBRARIES += kj-prebuilt
-LOCAL_STATIC_LIBRARIES += boost_thread_static
-LOCAL_STATIC_LIBRARIES += boost_system_static
 
-LOCAL_WHOLE_STATIC_LIBRARIES := jzmq-prebuilt
 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)
 
-$(call import-add-path,$(LOCAL_PATH)/..)
+$(call import-add-path,$(LOCAL_PATH)/../..)
 $(call import-module,prebuild-libs/zeromq)
-$(call import-module,libs/zmqpp)
-$(call import-module,prebuild-libs/capnproto-cpp)
-$(call import-module,boost/1.57.0)

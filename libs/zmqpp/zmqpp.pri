@@ -25,21 +25,11 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += \
-    $$PWD \
+    $$PWD/src \
 
 HEADERS += \
-    $$PWD/fcore/fcore.hpp \
-    $$PWD/fcore/capnproto/test.capnp.h \
 
 SOURCES += \
-    $$PWD/fcore/fcore.cpp \
-    $$PWD/fcore/capnproto/test.capnp.c++ \
 
 OTHER_FILES += \
-    $$PWD/fcore/capnproto/capnp-compile.cmd \
-    $$PWD/fcore/capnproto/capnp-main.cmd \
-    $$PWD/fcore/capnproto/test.capnp \
-
-include(../prebuild-libs/zeromq/zeromq.pri)
-include(../libs/zmqpp/zmqpp.pri)
-include(../prebuild-libs/capnproto-cpp/capnproto-cpp.pri)
+    $$PWD/Android.mk
