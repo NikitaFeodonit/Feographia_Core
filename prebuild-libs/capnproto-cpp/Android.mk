@@ -19,18 +19,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*******************************************************************************
 
+LOCAL_PATH := $(call my-dir)
 
-TEMPLATE = app
-CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
+include $(CLEAR_VARS)
+LOCAL_MODULE := capnp-prebuilt
+LOCAL_SRC_FILES := lib/libcapnp.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+include $(PREBUILT_STATIC_LIBRARY)
 
-INCLUDEPATH += \
-    $$PWD/include
 
-HEADERS += \
+include $(CLEAR_VARS)
+LOCAL_MODULE := capnp-rpc-prebuilt
+LOCAL_SRC_FILES := lib/libcapnp-rpc.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+include $(PREBUILT_STATIC_LIBRARY)
 
-SOURCES += \
 
-OTHER_FILES += \
-    $$PWD/Android.mk \
+include $(CLEAR_VARS)
+LOCAL_MODULE := capnp-kj-prebuilt
+LOCAL_SRC_FILES := lib/libkj.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+include $(PREBUILT_STATIC_LIBRARY)
+
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := capnp-kj-async-prebuilt
+LOCAL_SRC_FILES := lib/libkj-async.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
+include $(PREBUILT_STATIC_LIBRARY)
