@@ -47,9 +47,11 @@ LOCAL_CPPFLAGS += -frtti
 
 LOCAL_LDLIBS := -llog
 
-LOCAL_STATIC_LIBRARIES := zeromq-prebuilt
+LOCAL_STATIC_LIBRARIES := zmq-prebuilt
+LOCAL_STATIC_LIBRARIES += czmq-prebuilt
+LOCAL_STATIC_LIBRARIES += czmqpp-prebuilt
 LOCAL_STATIC_LIBRARIES += capnp-prebuilt
-LOCAL_STATIC_LIBRARIES += capnp-kj-prebuilt
+LOCAL_STATIC_LIBRARIES += kj-prebuilt
 LOCAL_STATIC_LIBRARIES += boost_thread_static
 LOCAL_STATIC_LIBRARIES += boost_system_static
 
@@ -59,6 +61,5 @@ include $(BUILD_SHARED_LIBRARY)
 
 $(call import-add-path,$(LOCAL_PATH)/..)
 $(call import-module,prebuild-libs/zeromq)
-$(call import-module,prebuild-libs/jzmq)
 $(call import-module,prebuild-libs/capnproto-cpp)
 $(call import-module,boost/1.57.0)

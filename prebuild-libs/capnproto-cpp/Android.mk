@@ -36,14 +36,14 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := capnp-kj-prebuilt
+LOCAL_MODULE := kj-prebuilt
 LOCAL_SRC_FILES := lib/libkj.a
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
 include $(PREBUILT_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := capnp-kj-async-prebuilt
+LOCAL_MODULE := kj-async-prebuilt
 LOCAL_SRC_FILES := lib/libkj-async.a
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
 include $(PREBUILT_STATIC_LIBRARY)
