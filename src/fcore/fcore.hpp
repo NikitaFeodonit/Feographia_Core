@@ -28,7 +28,5 @@
 void fcoreMain();
 void* fcoreRunMainThread();
 
-void fcoreTestZeroMqReq(zmq::context_t* zmqContext);
-
 
 #endif // FCORE_HPP

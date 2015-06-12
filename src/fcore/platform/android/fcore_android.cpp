@@ -76,12 +76,3 @@ jlong Java_ru_feographia_FCore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 
     return zmqContextPointer;
 }
-
-
-extern "C"
-void Java_ru_feographia_FCore_fcoreTestZeroMqReq(JNIEnv* env, jobject thiz, jlong zmqContextPointer)
-{
-//    zmq::context_t* existingContext = new zmq::context_t();
-//    existingContext->ptr = zmqContextPointer;
-//    fcoreTestZeroMqReq(existingContext);
-}

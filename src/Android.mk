@@ -28,7 +28,9 @@ LOCAL_MODULE    := fcore
 #LOCAL_MODULE_FILENAME := libfcore
 
 
+LOCAL_CPP_EXTENSION := .cpp .c++
 LOCAL_SRC_FILES := fcore/fcore.cpp
+LOCAL_SRC_FILES += fcore/capnproto/test.capnp.c++
 LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)

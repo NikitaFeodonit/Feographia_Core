@@ -22,7 +22,20 @@
 #include <boost/thread.hpp>
 #include <zmq.hpp>
 
+#include <capnp/common.h>
+#include <capnp/message.h>
+#include <capnp/serialize.h>
+
+#include <kj/common.h>
+#include <kj/memory.h>
+#include <kj/mutex.h>
+#include <kj/array.h>
+
+#include <string>
+#include <iostream>
+
 #include "fcore.hpp"
+#include "capnproto/test.capnp.h"
 
 
 class FcoreMain
@@ -31,21 +44,54 @@ public:
         void operator()(zmq::context_t* zmqContext)
         {
             //  Prepare our context and socket
-//            zmq::socket_t socket (*context, ZMQ_REP);
-//            socket.bind ("tcp://127.0.0.1:7575");
             zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
             socket.bind ("inproc://step3");
 
             while (true) {
-                zmq::message_t request;
+                // receive the message
+                zmq::message_t msgRequest;
+                socket.recv (&msgRequest);
 
-                //  Wait for next request from client
-                socket.recv (&request);
 
-                //  Send reply back to client
-                zmq::message_t reply (5);
-                memcpy ((void *) reply.data (), "World", 5);
-                socket.send (reply);
+                // decompose message
+                capnp::word* msgWords = (capnp::word*) msgRequest.data();
+                size_t msgSize = msgRequest.size() / sizeof(capnp::word);
+
+                kj::DestructorOnlyArrayDisposer adp;
+                kj::Array<capnp::word> msgArray(msgWords, msgSize, adp);
+                kj::ArrayPtr<capnp::word> msgArrayP = msgArray.asPtr();
+                capnp::FlatArrayMessageReader famr(msgArrayP);
+
+
+                // read capnproto struct
+                Request::Reader reqReader = famr.getRoot<Request>();
+
+                uint32_t id = reqReader.getId();
+//                std::cout << "id " << id << std::endl;
+                std::string name = reqReader.getName().cStr();
+//                std::cout << "name " << name << std::endl;
+
+
+                // write new capnproto struct
+                capnp::MallocMessageBuilder cpMessageBuilder;
+
+                Reply::Builder replyBuilder = cpMessageBuilder.initRoot<Reply>();
+                replyBuilder.setIdReply(/*id +*/ 12);
+                replyBuilder.setNameReply(/*name +*/ "FamilieMy");
+
+
+                // send message
+                kj::Array<capnp::word> words = messageToFlatArray(cpMessageBuilder);
+                kj::ArrayPtr<kj::byte> bytes = words.asBytes();
+
+                void* msgReplyPtr = (void*) bytes.begin();
+                size_t msgReplySize = bytes.size();
+
+                zmq::message_t msgReply (msgReplySize);
+                memcpy ((void *) msgReply.data (), msgReplyPtr, msgReplySize);
+
+                socket.send (msgReply);
+//                std::cout << "Sended message" << std::endl;
                 }
         }
 };
@@ -58,22 +104,4 @@ void* fcoreRunMainThread()
     boost::thread fcoreMainThread(fcoreMain, zmqContext);
 
     return *zmqContext; // return zmqContext->ptr;
-}
-
-
-void fcoreTestZeroMqReq(zmq::context_t* zmqContext)
-{
-//    zmq::socket_t socket (*context, ZMQ_REQ);
-//    socket.connect ("tcp://127.0.0.1:7575");
-    zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-    socket.connect ("inproc://step3");
-
-    for (int request_nbr = 0; request_nbr < 5000; ++request_nbr) {
-        zmq::message_t request (6);
-        memcpy ((void *) request.data (), "Hello", 5);
-        socket.send (request);
-
-        zmq::message_t reply;
-        socket.recv (&reply);
-    }
 }
