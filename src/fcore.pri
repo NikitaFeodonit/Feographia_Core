@@ -41,5 +41,5 @@ OTHER_FILES += \
     $$PWD/fcore/capnproto/test.capnp \
 
 include(../prebuild-libs/zeromq/zeromq.pri)
-include(../libs/zmqpp/zmqpp.pri)
+#include(../libs/zmqpp/zmqpp.pri)
 include(../prebuild-libs/capnproto-cpp/capnproto-cpp.pri)
