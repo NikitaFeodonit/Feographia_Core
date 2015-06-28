@@ -20,6 +20,9 @@
  ******************************************************************************/
 
 #include <boost/thread.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
+#include <boost/smart_ptr/make_shared_array.hpp>
+
 #include <zmq.hpp>
 
 #include <capnp/common.h>
@@ -39,19 +42,19 @@
 #include "capnproto/fcore.capnp.h"
 
 
-char* readFile(std::string path) {
+boost::shared_ptr<char[]> readFile(std::string path) {
     using namespace std;
 
-    ifstream file(path, ios::in | ios::binary | ios::ate);
+    auto file = boost::make_shared<ifstream>(path, ios::in | ios::binary | ios::ate);
 
-    if (file.is_open()) {
-        streampos fileSize = file.tellg();
+    if (file->is_open()) {
+        streampos fileSize = file->tellg();
         size_t bufferSize = fileSize;
 
-        char* buffer = new char[++bufferSize];
-        file.seekg(0, ios::beg);
-        file.read(buffer, fileSize);
-        file.close();
+        auto buffer = boost::make_shared<char[]>(++bufferSize);
+
+        file->seekg(0, ios::beg);
+        file->read(buffer.get(), fileSize);
         buffer[fileSize] = 0; // terminate C-string by 0
 
 //        cout << "buffer: " << *buffer << std::endl;
@@ -101,13 +104,13 @@ public:
 
                 // read file
                 std::cout << "file reading" << std::endl;
-                char* fileText = readFile(path);
+                auto fileText = readFile(path);
 
 
                 // write new capnproto message
                 capnp::MallocMessageBuilder capnpMsgBuilder;
                 FCoreMessages::LoadFileRep::Builder replyBuilder = capnpMsgBuilder.initRoot<FCoreMessages::LoadFileRep>();
-                replyBuilder.setText(nullptr == fileText ? "" : fileText);
+                replyBuilder.setText(nullptr == fileText ? "" : fileText.get());
 
 
                 // capnproto message to zmq message
@@ -124,8 +127,6 @@ public:
 
                 socket.send (zmqMsgReply);
                 std::cout << "Sended message" << std::endl;
-
-                delete[] fileText;
                 }
         }
 };
