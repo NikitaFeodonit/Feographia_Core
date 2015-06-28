@@ -42,27 +42,28 @@
 char* readFile(std::string path) {
     using namespace std;
 
-    streampos size;
-    char* memblock;
-
     ifstream file(path, ios::in | ios::binary | ios::ate);
 
     if (file.is_open()) {
-        size = file.tellg();
-        memblock = new char [size];
-        file.seekg (0, ios::beg);
-        file.read (memblock, size);
+        streampos fileSize = file.tellg();
+        size_t bufferSize = fileSize;
+
+        char* buffer = new char[++bufferSize];
+        file.seekg(0, ios::beg);
+        file.read(buffer, fileSize);
         file.close();
+        buffer[fileSize] = 0; // terminate C-string by 0
 
-//        cout << "the entire file content is in memory" << std::endl;
-        return memblock;
+//        cout << "buffer: " << *buffer << std::endl;
+//        cout << "bufferSize: " << bufferSize << std::endl;
 
-//        delete[] memblock;
+        return buffer;
         }
 
-    else cout << "Unable to open file";
-
-    return 0;
+    else {
+        cout << "Unable to open file, path: " << path;
+        return nullptr;
+        }
 }
 
 
@@ -77,13 +78,13 @@ public:
 
             while (true) {
                 // receive the message
-                zmq::message_t msgRequest;
-                socket.recv (&msgRequest);
+                zmq::message_t zmqMsgRequest;
+                socket.recv (&zmqMsgRequest);
 
 
-                // decompose message
-                capnp::word* msgWords = (capnp::word*) msgRequest.data();
-                size_t msgSize = msgRequest.size() / sizeof(capnp::word);
+                // zmq message to capnp message
+                capnp::word* msgWords = (capnp::word*) zmqMsgRequest.data();
+                size_t msgSize = zmqMsgRequest.size() / sizeof(capnp::word);
 
                 kj::DestructorOnlyArrayDisposer adp;
                 kj::Array<capnp::word> msgArray(msgWords, msgSize, adp);
@@ -98,31 +99,30 @@ public:
                 std::cout << "path: " << path << std::endl;
 
 
-                // load file
-                std::string text = "<html>test text</html>";
+                // read file
                 std::cout << "file reading" << std::endl;
                 char* fileText = readFile(path);
-//                std::cout << "fileText: " << fileText << std::endl;
 
 
-                // write new capnproto struct
-                capnp::MallocMessageBuilder cpMessageBuilder;
+                // write new capnproto message
+                capnp::MallocMessageBuilder capnpMsgBuilder;
+                FCoreMessages::LoadFileRep::Builder replyBuilder = capnpMsgBuilder.initRoot<FCoreMessages::LoadFileRep>();
+                replyBuilder.setText(nullptr == fileText ? "" : fileText);
 
-                FCoreMessages::LoadFileRep::Builder replyBuilder = cpMessageBuilder.initRoot<FCoreMessages::LoadFileRep>();
-                replyBuilder.setText(fileText);
 
-
-                // send message
-                kj::Array<capnp::word> words = messageToFlatArray(cpMessageBuilder);
+                // capnproto message to zmq message
+                kj::Array<capnp::word> words = messageToFlatArray(capnpMsgBuilder);
                 kj::ArrayPtr<kj::byte> bytes = words.asBytes();
 
                 void* msgReplyPtr = (void*) bytes.begin();
                 size_t msgReplySize = bytes.size();
 
-                zmq::message_t msgReply (msgReplySize);
-                memcpy ((void *) msgReply.data (), msgReplyPtr, msgReplySize);
 
-                socket.send (msgReply);
+                // send zmq message
+                zmq::message_t zmqMsgReply(msgReplySize);
+                memcpy ((void *) zmqMsgReply.data (), msgReplyPtr, msgReplySize);
+
+                socket.send (zmqMsgReply);
                 std::cout << "Sended message" << std::endl;
 
                 delete[] fileText;
