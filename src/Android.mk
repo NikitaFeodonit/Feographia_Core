@@ -31,6 +31,7 @@ LOCAL_MODULE    := fcore
 LOCAL_CPP_EXTENSION := .cpp .c++
 LOCAL_SRC_FILES := fcore/fcore.cpp
 LOCAL_SRC_FILES += fcore/capnproto/test.capnp.c++
+LOCAL_SRC_FILES += fcore/capnproto/fcore.capnp.c++
 LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
@@ -43,6 +44,7 @@ TARGET_PLATFORM := android-9
 #LOCAL_CPP_FEATURES += exceptions
 LOCAL_CPPFLAGS += -fexceptions
 LOCAL_CPPFLAGS += -frtti
+LOCAL_CPPFLAGS += -std=c++11
 
 #LOCAL_EXPORT_CFLAGS := -DFOO=1
 #LOCAL_EXPORT_CPPFLAGS := -DFOO=1
