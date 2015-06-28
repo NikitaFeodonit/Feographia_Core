@@ -35,7 +35,7 @@
 #include <iostream>
 
 #include "fcore.hpp"
-#include "capnproto/test.capnp.h"
+#include "capnproto/fcore.capnp.h"
 
 
 class FcoreMain
@@ -45,7 +45,7 @@ public:
         {
             //  Prepare our context and socket
             zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-            socket.bind ("inproc://step3");
+            socket.bind ("inproc://fcore");
 
             while (true) {
                 // receive the message
@@ -64,20 +64,21 @@ public:
 
 
                 // read capnproto struct
-                Request::Reader reqReader = famr.getRoot<Request>();
+                FCoreMessages::LoadFileReq::Reader reqReader = famr.getRoot<FCoreMessages::LoadFileReq>();
 
-                uint32_t id = reqReader.getId();
-//                std::cout << "id " << id << std::endl;
-                std::string name = reqReader.getName().cStr();
-//                std::cout << "name " << name << std::endl;
+                std::string path = reqReader.getPath().cStr();
+                std::cout << "path: " << path << std::endl;
+
+
+                // load file
+                std::string text = "<html>test text</html>";
 
 
                 // write new capnproto struct
                 capnp::MallocMessageBuilder cpMessageBuilder;
 
-                Reply::Builder replyBuilder = cpMessageBuilder.initRoot<Reply>();
-                replyBuilder.setIdReply(/*id +*/ 12);
-                replyBuilder.setNameReply(/*name +*/ "FamilieMy");
+                FCoreMessages::LoadFileRep::Builder replyBuilder = cpMessageBuilder.initRoot<FCoreMessages::LoadFileRep>();
+                replyBuilder.setText(text);
 
 
                 // send message
@@ -91,7 +92,7 @@ public:
                 memcpy ((void *) msgReply.data (), msgReplyPtr, msgReplySize);
 
                 socket.send (msgReply);
-//                std::cout << "Sended message" << std::endl;
+                std::cout << "Sended message" << std::endl;
                 }
         }
 };

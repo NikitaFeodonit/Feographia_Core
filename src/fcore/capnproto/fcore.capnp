@@ -32,3 +32,7 @@ $Java.outerClassname("FCoreMessages");
 struct LoadFileReq {
   path @0 :Text;
 }
+
+struct LoadFileRep {
+  text @0 :Text;
+}
