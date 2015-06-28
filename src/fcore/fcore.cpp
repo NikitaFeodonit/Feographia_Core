@@ -33,9 +33,37 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "fcore.hpp"
 #include "capnproto/fcore.capnp.h"
+
+
+char* readFile(std::string path) {
+    using namespace std;
+
+    streampos size;
+    char* memblock;
+
+    ifstream file(path, ios::in | ios::binary | ios::ate);
+
+    if (file.is_open()) {
+        size = file.tellg();
+        memblock = new char [size];
+        file.seekg (0, ios::beg);
+        file.read (memblock, size);
+        file.close();
+
+//        cout << "the entire file content is in memory" << std::endl;
+        return memblock;
+
+//        delete[] memblock;
+        }
+
+    else cout << "Unable to open file";
+
+    return 0;
+}
 
 
 class FcoreMain
@@ -72,13 +100,16 @@ public:
 
                 // load file
                 std::string text = "<html>test text</html>";
+                std::cout << "file reading" << std::endl;
+                char* fileText = readFile(path);
+//                std::cout << "fileText: " << fileText << std::endl;
 
 
                 // write new capnproto struct
                 capnp::MallocMessageBuilder cpMessageBuilder;
 
                 FCoreMessages::LoadFileRep::Builder replyBuilder = cpMessageBuilder.initRoot<FCoreMessages::LoadFileRep>();
-                replyBuilder.setText(text);
+                replyBuilder.setText(fileText);
 
 
                 // send message
@@ -93,6 +124,8 @@ public:
 
                 socket.send (msgReply);
                 std::cout << "Sended message" << std::endl;
+
+                delete[] fileText;
                 }
         }
 };
