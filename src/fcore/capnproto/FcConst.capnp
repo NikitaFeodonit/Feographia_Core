@@ -19,34 +19,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*******************************************************************************
 
-TEMPLATE = app
-CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
+@0xe4ee0ce1e6c6a481;
 
-INCLUDEPATH += \
-    $$PWD \
+using Cxx = import "/capnp/c++.capnp";
+$Cxx.namespace("FcConst");
 
-HEADERS += \
-    $$PWD/fcore/fcore.hpp \
-#    $$PWD/fcore/capnproto/test.capnp.h \
-#    $$PWD/fcore/capnproto/FcMsg.capnp.h \
-#    $$PWD/fcore/capnproto/FcConst.capnp.h \
-
-SOURCES += \
-    $$PWD/fcore/fcore.cpp \
-#    $$PWD/fcore/capnproto/test.capnp.c++ \
-#    $$PWD/fcore/capnproto/FcMsg.capnp.c++ \
-#    $$PWD/fcore/capnproto/FcConst.capnp.c++ \
-
-OTHER_FILES += \
-    $$PWD/fcore/capnproto/capnp-compile.cmd \
-    $$PWD/fcore/capnproto/capnp-main.cmd \
-    \
-    $$PWD/fcore/capnproto/test.capnp \
-    $$PWD/fcore/capnproto/FcMsg.capnp \
-    $$PWD/fcore/capnproto/FcConst.capnp \
+using Java = import "/capnp/java.capnp";
+$Java.package("ru.feographia.capnproto");
+$Java.outerClassname("FcConst");
 
 
-include(../prebuild-libs/zeromq/zeromq.pri)
-include(../prebuild-libs/capnproto-cpp/capnproto-cpp.pri)
+const inprocFcore :Text = "inproc://fcore";

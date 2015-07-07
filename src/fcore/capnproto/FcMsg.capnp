@@ -19,20 +19,50 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #*******************************************************************************
 
-@0xddd08a9a8cb53659;
+@0xd53496402d81854c;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("FCoreMessages");
+$Cxx.namespace("FcMsg");
 
 using Java = import "/capnp/java.capnp";
 $Java.package("ru.feographia.capnproto");
-$Java.outerClassname("FCoreMessages");
+$Java.outerClassname("FcMsg");
 
 
-struct LoadFileReq {
-  path @0 :Text;
+struct Message
+{
+  type @0 :Int32;
+  dataPointer @1 :AnyPointer;
 }
 
-struct LoadFileRep {
-  text @0 :Text;
+
+struct Reference
+{
+  bookId @0 :Text;
+  chapterId @1 :Int32;
+  fromVerseId @2 :Int32;
+  toVerseId @3 :Int32;
+}
+
+
+struct GetChapterQ
+{
+  reference @0 :Reference;
+}
+struct GetChapterR
+{
+  isError @0 :Bool = false;
+  chapterText @1 :Text;
+}
+
+
+# for test
+struct GetFileTextQ
+{
+  filePath @0 :Text;
+}
+struct GetFileTextR
+{
+  isError @0 :Bool = false;
+  fileText @1 :Text;
 }

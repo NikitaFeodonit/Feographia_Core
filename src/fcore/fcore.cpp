@@ -39,102 +39,141 @@
 #include <fstream>
 
 #include "fcore.hpp"
-#include "capnproto/fcore.capnp.h"
+#include "capnproto/FcMsg.capnp.h"
+#include "capnproto/FcConst.capnp.h"
 
 
-boost::shared_ptr<char[]> readFile(std::string path) {
-    using namespace std;
+const char* INPROC_FCORE = "inproc://fcore";
 
-    auto file = boost::make_shared<ifstream>(path, ios::in | ios::binary | ios::ate);
-
-    if (file->is_open()) {
-        streampos fileSize = file->tellg();
-        size_t bufferSize = fileSize;
-
-        auto buffer = boost::make_shared<char[]>(++bufferSize);
-
-        file->seekg(0, ios::beg);
-        file->read(buffer.get(), fileSize);
-        buffer[fileSize] = 0; // terminate C-string by 0
-
-//        cout << "buffer: " << *buffer << std::endl;
-//        cout << "bufferSize: " << bufferSize << std::endl;
-
-        return buffer;
-        }
-
-    else {
-        cout << "Unable to open file, path: " << path;
-        return nullptr;
-        }
-}
+const int32_t MSG_TYPE_GET_FILE_TEXT = 9999;
 
 
 class FcoreMain
 {
 public:
-        void operator()(zmq::context_t* zmqContext)
-        {
-            //  Prepare our context and socket
-            zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-            socket.bind ("inproc://fcore");
+    void operator()(zmq::context_t* zmqContext)
+    {
+        // Prepare zmq socket
+        zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
+        socket.bind(INPROC_FCORE);
 
-            while (true) {
-                // receive the message
-                zmq::message_t zmqMsgRequest;
-                socket.recv (&zmqMsgRequest);
-
-
-                // zmq message to capnp message
-                capnp::word* msgWords = (capnp::word*) zmqMsgRequest.data();
-                size_t msgSize = zmqMsgRequest.size() / sizeof(capnp::word);
-
-                kj::DestructorOnlyArrayDisposer adp;
-                kj::Array<capnp::word> msgArray(msgWords, msgSize, adp);
-                kj::ArrayPtr<capnp::word> msgArrayP = msgArray.asPtr();
-                capnp::FlatArrayMessageReader famr(msgArrayP);
+        while (true) {
+            // receive the query
+            zmq::message_t zmqQuery;
+            socket.recv(&zmqQuery);
 
 
-                // read capnproto struct
-                FCoreMessages::LoadFileReq::Reader reqReader = famr.getRoot<FCoreMessages::LoadFileReq>();
+            // zmq query to the capnp query
+            capnp::word* queryWords = (capnp::word*) zmqQuery.data();
+            size_t querySize = zmqQuery.size() / sizeof(capnp::word);
 
-                std::string path = reqReader.getPath().cStr();
-                std::cout << "path: " << path << std::endl;
-
-
-                // read file
-                std::cout << "file reading" << std::endl;
-                auto fileText = readFile(path);
+            kj::DestructorOnlyArrayDisposer adp;
+            kj::Array<capnp::word> msgArray(queryWords, querySize, adp);
+            kj::ArrayPtr<capnp::word> queryArrayP = msgArray.asPtr();
+            capnp::FlatArrayMessageReader cpnQuery(queryArrayP);
 
 
-                // write new capnproto message
-                capnp::MallocMessageBuilder capnpMsgBuilder;
-                FCoreMessages::LoadFileRep::Builder replyBuilder = capnpMsgBuilder.initRoot<FCoreMessages::LoadFileRep>();
-                replyBuilder.setText(nullptr == fileText ? "" : fileText.get());
+            // read the capnproto struct
+            FcMsg::Message::Reader message = cpnQuery.getRoot<FcMsg::Message>();
+            boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
 
+            // work the query by the query type
+            switch (message.getType()) {
 
-                // capnproto message to zmq message
-                kj::Array<capnp::word> words = messageToFlatArray(capnpMsgBuilder);
-                kj::ArrayPtr<kj::byte> bytes = words.asBytes();
-
-                void* msgReplyPtr = (void*) bytes.begin();
-                size_t msgReplySize = bytes.size();
-
-
-                // send zmq message
-                zmq::message_t zmqMsgReply(msgReplySize);
-                memcpy ((void *) zmqMsgReply.data (), msgReplyPtr, msgReplySize);
-
-                socket.send (zmqMsgReply);
-                std::cout << "Sended message" << std::endl;
+                case MSG_TYPE_GET_FILE_TEXT: {
+                    capnp::AnyPointer::Reader dataPointer = message.getDataPointer();
+                    cpnReply = sendGetFileTextR(dataPointer.getAs<FcMsg::GetFileTextQ>());
+                    break;
                 }
+
+                default:
+                    // TODO: send error msg
+                    cpnReply = nullptr;
+                    ;
+            }
+
+
+            // send the reply
+            if (nullptr != cpnReply) {
+                // capnproto message to the zmq message
+                kj::Array<capnp::word> replyWords = messageToFlatArray(*cpnReply);
+                kj::ArrayPtr<kj::byte> replyBytes = replyWords.asBytes();
+
+                void* replyBytesPtr = (void*) replyBytes.begin();
+                size_t replySize = replyBytes.size();
+
+
+                // send the zmq reply
+                zmq::message_t zmqReply(replySize);
+                memcpy ((void *) zmqReply.data (), replyBytesPtr, replySize);
+
+                bool result = socket.send (zmqReply);
+                std::cout << (result ? "Sended message" : "Send message failed") << std::endl;
+            }
         }
+    }
+
+
+protected:
+    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader queryData) {
+        // get the query data
+        std::string path = queryData.getFilePath().cStr();
+        std::cout << "filePath: " << path << std::endl;
+
+
+        // make the reply data
+        // read file
+        std::cout << "file reading" << std::endl;
+        auto fileText = getFileText(path);
+
+
+        // the new capnproto reply
+        auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
+        FcMsg::GetFileTextR::Builder replyData = cpnReply->initRoot<FcMsg::GetFileTextR>();
+
+
+        // set the reply data
+        // TODO: work Ex
+        if (nullptr != fileText) {
+            replyData.setFileText(fileText.get());
+        } else {
+            replyData.setFileText(""); // TODO: setText(Ex.getText())
+            replyData.setIsError(true);
+        }
+
+        return cpnReply;
+    }
+
+
+    boost::shared_ptr<char[]> getFileText(std::string filePath) {
+        auto file = boost::make_shared<std::ifstream>(filePath, std::ios::in | std::ios::binary | std::ios::ate);
+
+        if (file->is_open()) {
+            std::streampos fileSize = file->tellg();
+            size_t bufferSize = fileSize;
+
+            auto buffer = boost::make_shared<char[]>(++bufferSize);
+
+            file->seekg(0, std::ios::beg);
+            file->read(buffer.get(), fileSize);
+            buffer[fileSize] = 0; // terminate C-string by 0
+
+            return buffer;
+        }
+
+        else {
+            std::string error = "Unable to open file, path: " + filePath;
+            std::cout << error << std::endl;
+            return nullptr; // TODO: throw Ex(error)
+        }
+    }
 };
 
 
 void* fcoreRunMainThread()
 {
     FcoreMain fcoreMain;
+    // Prepare zmq context
     zmq::context_t* zmqContext = new zmq::context_t(1);
     boost::thread fcoreMainThread(fcoreMain, zmqContext);
 

@@ -31,7 +31,8 @@ LOCAL_MODULE    := fcore
 LOCAL_CPP_EXTENSION := .cpp .c++
 LOCAL_SRC_FILES := fcore/fcore.cpp
 LOCAL_SRC_FILES += fcore/capnproto/test.capnp.c++
-LOCAL_SRC_FILES += fcore/capnproto/fcore.capnp.c++
+LOCAL_SRC_FILES += fcore/capnproto/FcMsg.capnp.c++
+LOCAL_SRC_FILES += fcore/capnproto/FcConst.capnp.c++
 LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)

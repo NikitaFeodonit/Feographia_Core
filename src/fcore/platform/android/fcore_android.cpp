@@ -66,7 +66,7 @@ private:
 
 
 extern "C"
-jlong Java_ru_feographia_FCore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
+jlong Java_ru_feographia_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
     std::cout.rdbuf(new androidbuf);
 
