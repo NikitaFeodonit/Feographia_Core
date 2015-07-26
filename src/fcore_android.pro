@@ -38,6 +38,6 @@ OTHER_FILES += \
 
 # from Crystax NDK
 INCLUDEPATH += \
-    $(ANDROID_NDK_ROOT)/sources/boost/1.57.0/include \
+    $(ANDROID_NDK_ROOT)/sources/boost/1.58.0/include \
 
 include(fcore.pri)
