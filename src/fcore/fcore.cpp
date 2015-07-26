@@ -22,6 +22,7 @@
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/make_shared_array.hpp>
+#include <boost/exception/all.hpp>
 
 #include <zmq.hpp>
 
@@ -43,8 +44,15 @@
 #include "capnproto/FcConst.capnp.h"
 
 
+typedef boost::error_info<struct errInfoMsg_, std::string> ErrInfoMsg;
+typedef boost::error_info<struct errInfoFilePath_,std::string> ErrInfoFilePath;
+struct FileOpenError: virtual boost::exception { };
+struct GetFileTextError: virtual boost::exception { };
+
+
 const char* INPROC_FCORE = "inproc://fcore";
 
+const int32_t MSG_TYPE_ERROR = 9998;
 const int32_t MSG_TYPE_GET_FILE_TEXT = 9999;
 
 
@@ -87,9 +95,9 @@ public:
                 }
 
                 default:
-                    // TODO: send error msg
-                    cpnReply = nullptr;
-                    ;
+                    std::string errorMsg = "ERROR: unknown message type: " + msgQ.getMsgType();
+                    std::cout << errorMsg << std::endl;
+                    cpnReply = sendErrorMsgR(errorMsg);
             }
 
 
@@ -115,39 +123,68 @@ public:
 
 
 protected:
-    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader dataQ) {
+    boost::shared_ptr<capnp::MallocMessageBuilder> sendErrorMsgR(std::string errorMsg)
+    {
+        // the new capnproto reply
+        auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
+        FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
+
+        // set the reply type
+        msgR.setMsgType(MSG_TYPE_ERROR);
+        msgR.setErrorFlag(true);
+        msgR.setMsgText(errorMsg);
+
+        return cpnReply;
+    }
+
+
+    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader dataQ)
+    {
         // get the query data
         std::string path = dataQ.getFilePath().cStr();
         std::cout << "filePath: " << path << std::endl;
-
-
-        // make the reply data
-        // read file
-        std::cout << "file reading" << std::endl;
-        auto fileText = getFileText(path);
-
 
         // the new capnproto reply
         auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
         FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
 
-        // set the reply data
-        // TODO: work Exeption
+        // set the reply type
         msgR.setMsgType(MSG_TYPE_GET_FILE_TEXT);
-        if (nullptr != fileText) {
-            capnp::AnyPointer::Builder dataPtrR = msgR.initDataPointer();
-            FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
-            dataR.setFileText(fileText.get());
-        } else {
+
+        try {
+            // make the reply data
+            // read file
+            std::cout << "file reading" << std::endl;
+            auto fileText = getFileText(path);
+
+            // set the reply data
+            if (nullptr != fileText) {
+                capnp::AnyPointer::Builder dataPtrR = msgR.initDataPointer();
+                FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
+                dataR.setFileText(fileText.get());
+            } else {
+                throw GetFileTextError() << ErrInfoMsg("getFileText() error");
+            }
+
+        } catch (boost::exception& ex) {
+            // set the error reply data
+            std::string errorMsg;
+            if (std::string const* errMsgPtr = boost::get_error_info<ErrInfoMsg>(ex) ) {
+                errorMsg += *errMsgPtr;
+            }
+            if (std::string const* filePathPtr = boost::get_error_info<ErrInfoFilePath>(ex) ) {
+                errorMsg += *filePathPtr;
+            }
             msgR.setErrorFlag(true);
-            msgR.setMsgText("error"); // TODO: setText(Ex.getText())
+            msgR.setMsgText(errorMsg);
         }
 
         return cpnReply;
     }
 
 
-    boost::shared_ptr<char[]> getFileText(std::string filePath) {
+    boost::shared_ptr<char[]> getFileText(std::string filePath)
+    {
         auto file = boost::make_shared<std::ifstream>(filePath, std::ios::in | std::ios::binary | std::ios::ate);
 
         if (file->is_open()) {
@@ -164,9 +201,11 @@ protected:
         }
 
         else {
-            std::string error = "Unable to open file, path: " + filePath;
-            std::cout << error << std::endl;
-            return nullptr; // TODO: throw Ex(error)
+            std::string errorMsg = "Unable to open file, file path: ";
+            std::cout << errorMsg << filePath << std::endl;
+            throw FileOpenError()
+                    << ErrInfoMsg(errorMsg)
+                    << ErrInfoFilePath(filePath);
         }
     }
 };

@@ -27,6 +27,7 @@
 
 extern const char* INPROC_FCORE;
 
+extern const int32_t MSG_TYPE_ERROR;
 extern const int32_t MSG_TYPE_GET_FILE_TEXT;
 
 
