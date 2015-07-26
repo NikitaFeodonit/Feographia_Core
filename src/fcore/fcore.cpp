@@ -69,20 +69,20 @@ public:
 
             kj::DestructorOnlyArrayDisposer adp;
             kj::Array<capnp::word> msgArray(queryWords, querySize, adp);
-            kj::ArrayPtr<capnp::word> queryArrayP = msgArray.asPtr();
-            capnp::FlatArrayMessageReader cpnQuery(queryArrayP);
+            kj::ArrayPtr<capnp::word> arrayPtrQ = msgArray.asPtr();
+            capnp::FlatArrayMessageReader cpnQuery(arrayPtrQ);
 
 
             // read the capnproto struct
-            FcMsg::Message::Reader message = cpnQuery.getRoot<FcMsg::Message>();
+            FcMsg::Message::Reader msgQ = cpnQuery.getRoot<FcMsg::Message>();
             boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
 
             // work the query by the query type
-            switch (message.getType()) {
+            switch (msgQ.getMsgType()) {
 
                 case MSG_TYPE_GET_FILE_TEXT: {
-                    capnp::AnyPointer::Reader dataPointer = message.getDataPointer();
-                    cpnReply = sendGetFileTextR(dataPointer.getAs<FcMsg::GetFileTextQ>());
+                    capnp::AnyPointer::Reader dataPtrQ = msgQ.getDataPointer();
+                    cpnReply = sendGetFileTextR(dataPtrQ.getAs<FcMsg::GetFileTextQ>());
                     break;
                 }
 
@@ -115,9 +115,9 @@ public:
 
 
 protected:
-    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader queryData) {
+    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader dataQ) {
         // get the query data
-        std::string path = queryData.getFilePath().cStr();
+        std::string path = dataQ.getFilePath().cStr();
         std::cout << "filePath: " << path << std::endl;
 
 
@@ -129,16 +129,18 @@ protected:
 
         // the new capnproto reply
         auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
-        FcMsg::GetFileTextR::Builder replyData = cpnReply->initRoot<FcMsg::GetFileTextR>();
-
+        FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
 
         // set the reply data
-        // TODO: work Ex
+        // TODO: work Exeption
+        msgR.setMsgType(MSG_TYPE_GET_FILE_TEXT);
         if (nullptr != fileText) {
-            replyData.setFileText(fileText.get());
+            capnp::AnyPointer::Builder dataPtrR = msgR.initDataPointer();
+            FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
+            dataR.setFileText(fileText.get());
         } else {
-            replyData.setFileText(""); // TODO: setText(Ex.getText())
-            replyData.setIsError(true);
+            msgR.setErrorFlag(true);
+            msgR.setMsgText("error"); // TODO: setText(Ex.getText())
         }
 
         return cpnReply;

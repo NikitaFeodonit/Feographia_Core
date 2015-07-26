@@ -31,8 +31,10 @@ $Java.outerClassname("FcMsg");
 
 struct Message
 {
-  type @0 :Int32;
-  dataPointer @1 :AnyPointer;
+  errorFlag @0 :Bool = false;
+  msgType @1 :Int32;
+  msgText @2 :Text;
+  dataPointer @3 :AnyPointer;
 }
 
 
@@ -51,8 +53,7 @@ struct GetChapterQ
 }
 struct GetChapterR
 {
-  isError @0 :Bool = false;
-  chapterText @1 :Text;
+  chapterText @0 :Text;
 }
 
 
@@ -63,6 +64,5 @@ struct GetFileTextQ
 }
 struct GetFileTextR
 {
-  isError @0 :Bool = false;
-  fileText @1 :Text;
+  fileText @0 :Text;
 }
