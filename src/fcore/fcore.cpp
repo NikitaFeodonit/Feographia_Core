@@ -52,6 +52,8 @@ struct GetFileTextError: virtual boost::exception { };
 
 const char* INPROC_FCORE = "inproc://fcore";
 
+const int32_t MSG_TYPE_UNKNOWN = 0;
+const int32_t MSG_TYPE_GET_CHAPTER_TEXT = 1;
 const int32_t MSG_TYPE_ERROR = 9998;
 const int32_t MSG_TYPE_GET_FILE_TEXT = 9999;
 
