@@ -30,3 +30,8 @@ $Java.outerClassname("FcConst");
 
 
 const inprocFcore :Text = "inproc://fcore";
+
+const msgTypeUnknown :Int32 = 0;
+const msgTypeGetChapterText :Int32 = 1;
+const msgTypeGetFileText :Int32 = 999;
+const msgTypeError :Int32 = 1000;

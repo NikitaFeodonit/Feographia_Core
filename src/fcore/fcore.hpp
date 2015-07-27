@@ -25,14 +25,6 @@
 #include <zmq.hpp>
 
 
-extern const char* INPROC_FCORE;
-
-extern const int32_t MSG_TYPE_UNKNOWN;
-extern const int32_t MSG_TYPE_GET_CHAPTER_TEXT;
-extern const int32_t MSG_TYPE_ERROR;
-extern const int32_t MSG_TYPE_GET_FILE_TEXT;
-
-
 void fcoreMain();
 void* fcoreRunMainThread();
 

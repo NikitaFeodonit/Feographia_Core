@@ -50,14 +50,6 @@ struct FileOpenError: virtual boost::exception { };
 struct GetFileTextError: virtual boost::exception { };
 
 
-const char* INPROC_FCORE = "inproc://fcore";
-
-const int32_t MSG_TYPE_UNKNOWN = 0;
-const int32_t MSG_TYPE_GET_CHAPTER_TEXT = 1;
-const int32_t MSG_TYPE_ERROR = 9998;
-const int32_t MSG_TYPE_GET_FILE_TEXT = 9999;
-
-
 class FcoreMain
 {
 public:
@@ -65,7 +57,7 @@ public:
     {
         // Prepare zmq socket
         zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-        socket.bind(INPROC_FCORE);
+        socket.bind(FcConst::INPROC_FCORE.get().cStr());
 
         while (true) {
             // receive the query
@@ -90,7 +82,7 @@ public:
             // work the query by the query type
             switch (msgQ.getMsgType()) {
 
-                case MSG_TYPE_GET_FILE_TEXT: {
+                case FcConst::MSG_TYPE_GET_FILE_TEXT: {
                     capnp::AnyPointer::Reader dataPtrQ = msgQ.getDataPointer();
                     cpnReply = sendGetFileTextR(dataPtrQ.getAs<FcMsg::GetFileTextQ>());
                     break;
@@ -132,7 +124,7 @@ protected:
         FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
 
         // set the reply type
-        msgR.setMsgType(MSG_TYPE_ERROR);
+        msgR.setMsgType(FcConst::MSG_TYPE_ERROR);
         msgR.setErrorFlag(true);
         msgR.setMsgText(errorMsg);
 
@@ -151,7 +143,7 @@ protected:
         FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
 
         // set the reply type
-        msgR.setMsgType(MSG_TYPE_GET_FILE_TEXT);
+        msgR.setMsgType(FcConst::MSG_TYPE_GET_FILE_TEXT);
 
         try {
             // make the reply data
