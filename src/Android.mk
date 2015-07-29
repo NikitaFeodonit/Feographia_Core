@@ -24,16 +24,23 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 
-LOCAL_MODULE    := fcore
+LOCAL_MODULE := fcore
 #LOCAL_MODULE_FILENAME := libfcore
 
 
 LOCAL_CPP_EXTENSION := .cpp .c++
-LOCAL_SRC_FILES := fcore/fcore.cpp
-LOCAL_SRC_FILES += fcore/capnproto/test.capnp.c++
+
+LOCAL_SRC_FILES :=
+
 LOCAL_SRC_FILES += fcore/capnproto/FcMsg.capnp.c++
 LOCAL_SRC_FILES += fcore/capnproto/FcConst.capnp.c++
-LOCAL_SRC_FILES += fcore/platform/android/fcore_android.cpp
+
+LOCAL_SRC_FILES += fcore/message/FcoreMsg.cpp
+LOCAL_SRC_FILES += fcore/message/SendErrorMsg.cpp
+LOCAL_SRC_FILES += fcore/message/SendFileTextMsg.cpp
+
+LOCAL_SRC_FILES += fcore/Fcore.cpp
+LOCAL_SRC_FILES += fcore/platform/android/FcoreAndroid.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
@@ -52,13 +59,15 @@ LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_LDLIBS := -llog
 
-LOCAL_STATIC_LIBRARIES := zmq-prebuilt
+LOCAL_STATIC_LIBRARIES :=
+LOCAL_STATIC_LIBRARIES += zmq-prebuilt
 LOCAL_STATIC_LIBRARIES += capnp-prebuilt
 LOCAL_STATIC_LIBRARIES += kj-prebuilt
 LOCAL_STATIC_LIBRARIES += boost_thread_static
 LOCAL_STATIC_LIBRARIES += boost_system_static
 
-LOCAL_WHOLE_STATIC_LIBRARIES := jzmq-prebuilt
+LOCAL_WHOLE_STATIC_LIBRARIES :=
+LOCAL_WHOLE_STATIC_LIBRARIES += jzmq-prebuilt
 
 include $(BUILD_SHARED_LIBRARY)
 

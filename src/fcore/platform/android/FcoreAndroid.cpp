@@ -27,7 +27,7 @@
 #include <android/log.h>
 #define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "fcore", fmt, ##__VA_ARGS__)
 
-#include "fcore/fcore.hpp"
+#include "fcore/Fcore.hpp"
 
 
 // http://stackoverflow.com/a/8870278
@@ -66,8 +66,9 @@ private:
 
 
 extern "C"
-jlong Java_ru_feographia_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
+jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
+    // TODO: boost logger
     std::cout.rdbuf(new androidbuf);
 
     LOG("main thread: %s", "starting");

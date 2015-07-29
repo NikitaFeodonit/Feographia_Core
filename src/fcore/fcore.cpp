@@ -39,15 +39,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "fcore.hpp"
-#include "capnproto/FcMsg.capnp.h"
-#include "capnproto/FcConst.capnp.h"
+#include "fcore/capnproto/FcMsg.capnp.h"
+#include "fcore/capnproto/FcConst.capnp.h"
 
-
-typedef boost::error_info<struct errInfoMsg_, std::string> ErrInfoMsg;
-typedef boost::error_info<struct errInfoFilePath_,std::string> ErrInfoFilePath;
-struct FileOpenError: virtual boost::exception { };
-struct GetFileTextError: virtual boost::exception { };
+#include "fcore/message/SendErrorMsg.hpp"
+#include "fcore/message/SendFileTextMsg.hpp"
+#include "fcore/Fcore.hpp"
 
 
 class FcoreMain
@@ -57,7 +54,7 @@ public:
     {
         // Prepare zmq socket
         zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-        socket.bind(FcConst::INPROC_FCORE.get().cStr());
+        socket.bind(FcConst::INPROC_FCORE->cStr());
 
         while (true) {
             // receive the query
@@ -77,21 +74,25 @@ public:
 
             // read the capnproto struct
             FcMsg::Message::Reader msgQ = cpnQuery.getRoot<FcMsg::Message>();
+            auto msgPtrQ = boost::make_shared<FcMsg::Message::Reader>(msgQ);
+
+            // the new capnproto reply
             boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
 
             // work the query by the query type
-            switch (msgQ.getMsgType()) {
+            switch (msgPtrQ->getMsgType()) {
 
                 case FcConst::MSG_TYPE_GET_FILE_TEXT: {
-                    capnp::AnyPointer::Reader dataPtrQ = msgQ.getDataPointer();
-                    cpnReply = sendGetFileTextR(dataPtrQ.getAs<FcMsg::GetFileTextQ>());
+                    SendFileTextMsg sendFileTextMsg(msgPtrQ);
+                    cpnReply = sendFileTextMsg.msgWorker();
                     break;
                 }
 
-                default:
-                    std::string errorMsg = "ERROR: unknown message type: " + msgQ.getMsgType();
-                    std::cout << errorMsg << std::endl;
-                    cpnReply = sendErrorMsgR(errorMsg);
+                default: {
+                    SendErrorMsg sendErrorMsgmsg(msgPtrQ);
+                    cpnReply = sendErrorMsgmsg.msgWorker();
+                    break;
+                }
             }
 
 
@@ -110,96 +111,9 @@ public:
                 memcpy ((void *) zmqReply.data (), replyBytesPtr, replySize);
 
                 bool result = socket.send (zmqReply);
+                // TODO: boost logger
                 std::cout << (result ? "Sended message" : "Send message failed") << std::endl;
             }
-        }
-    }
-
-
-protected:
-    boost::shared_ptr<capnp::MallocMessageBuilder> sendErrorMsgR(std::string errorMsg)
-    {
-        // the new capnproto reply
-        auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
-        FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
-
-        // set the reply type
-        msgR.setMsgType(FcConst::MSG_TYPE_ERROR);
-        msgR.setErrorFlag(true);
-        msgR.setMsgText(errorMsg);
-
-        return cpnReply;
-    }
-
-
-    boost::shared_ptr<capnp::MallocMessageBuilder> sendGetFileTextR(FcMsg::GetFileTextQ::Reader dataQ)
-    {
-        // get the query data
-        std::string path = dataQ.getFilePath().cStr();
-        std::cout << "filePath: " << path << std::endl;
-
-        // the new capnproto reply
-        auto cpnReply = boost::make_shared<capnp::MallocMessageBuilder>();
-        FcMsg::Message::Builder msgR = cpnReply->initRoot<FcMsg::Message>();
-
-        // set the reply type
-        msgR.setMsgType(FcConst::MSG_TYPE_GET_FILE_TEXT);
-
-        try {
-            // make the reply data
-            // read file
-            std::cout << "file reading" << std::endl;
-            auto fileText = getFileText(path);
-
-            // set the reply data
-            if (nullptr != fileText) {
-                capnp::AnyPointer::Builder dataPtrR = msgR.initDataPointer();
-                FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
-                dataR.setFileText(fileText.get());
-            } else {
-                throw GetFileTextError() << ErrInfoMsg("getFileText() error");
-            }
-
-        } catch (boost::exception& ex) {
-            // set the error reply data
-            std::string errorMsg;
-            if (std::string const* errMsgPtr = boost::get_error_info<ErrInfoMsg>(ex) ) {
-                errorMsg += *errMsgPtr;
-            }
-            if (std::string const* filePathPtr = boost::get_error_info<ErrInfoFilePath>(ex) ) {
-                errorMsg += *filePathPtr;
-            }
-            msgR.setErrorFlag(true);
-            msgR.setMsgText(errorMsg);
-        }
-
-        return cpnReply;
-    }
-
-
-    boost::shared_ptr<char[]> getFileText(std::string filePath)
-    {
-        auto file = boost::make_shared<std::ifstream>(filePath, std::ios::in | std::ios::binary | std::ios::ate);
-
-        if (file->is_open()) {
-            std::streampos fileSize = file->tellg();
-            size_t bufferSize = fileSize;
-
-            auto buffer = boost::make_shared<char[]>(++bufferSize);
-
-            file->seekg(0, std::ios::beg);
-            file->read(buffer.get(), fileSize);
-            buffer[fileSize] = 0; // terminate C-string by 0
-
-            return buffer;
-        }
-
-        else {
-            std::string errorMsg = "Unable to open file, file path: ";
-            std::cout << errorMsg << filePath << std::endl;
-            throw FileOpenError()
-                    << ErrInfoMsg(errorMsg)
-                    << ErrInfoFilePath(filePath);
         }
     }
 };

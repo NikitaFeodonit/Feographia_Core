@@ -28,22 +28,25 @@ INCLUDEPATH += \
     $$PWD \
 
 HEADERS += \
-    $$PWD/fcore/fcore.hpp \
-#    $$PWD/fcore/capnproto/test.capnp.h \
 #    $$PWD/fcore/capnproto/FcMsg.capnp.h \
 #    $$PWD/fcore/capnproto/FcConst.capnp.h \
+    $$PWD/fcore/message/FcoreMsg.hpp \
+    $$PWD/fcore/message/SendErrorMsg.hpp
+    $$PWD/fcore/message/SendFileTextMsg.hpp \
+    $$PWD/fcore/Fcore.hpp \
 
 SOURCES += \
-    $$PWD/fcore/fcore.cpp \
-#    $$PWD/fcore/capnproto/test.capnp.c++ \
 #    $$PWD/fcore/capnproto/FcMsg.capnp.c++ \
 #    $$PWD/fcore/capnproto/FcConst.capnp.c++ \
+    $$PWD/fcore/message/FcoreMsg.cpp \
+    $$PWD/fcore/message/SendErrorMsg.cpp
+    $$PWD/fcore/message/SendFileTextMsg.cpp \
+    $$PWD/fcore/Fcore.cpp \
 
 OTHER_FILES += \
     $$PWD/fcore/capnproto/capnp-compile.cmd \
     $$PWD/fcore/capnproto/capnp-main.cmd \
     \
-    $$PWD/fcore/capnproto/test.capnp \
     $$PWD/fcore/capnproto/FcMsg.capnp \
     $$PWD/fcore/capnproto/FcConst.capnp \
 

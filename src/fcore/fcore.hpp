@@ -22,8 +22,6 @@
 #ifndef FCORE_HPP
 #define FCORE_HPP
 
-#include <zmq.hpp>
-
 
 void fcoreMain();
 void* fcoreRunMainThread();

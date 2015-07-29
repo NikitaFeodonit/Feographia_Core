@@ -30,7 +30,7 @@ INCLUDEPATH += \
 HEADERS += \
 
 SOURCES += \
-    $$PWD/fcore/platform/android/fcore_android.cpp \
+    $$PWD/fcore/platform/android/FcoreAndroid.cpp \
 
 OTHER_FILES += \
     $$PWD/Android.mk \
