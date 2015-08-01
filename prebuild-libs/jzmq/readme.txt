@@ -39,14 +39,16 @@ make && make install
 
 6. Copying to project
 
-cp /local32/jzmq_inst/lib <Feographia_Android>/fcore/prebuild-libs/jzmq
+cp /local32/jzmq_inst/lib <Feographia_Android>/fcore/prebuild-libs/zeromq/lib
 
 # must be like so:
-# <Feographia_Android>/fcore/prebuild-libs/jzmq
-#     /lib
-#     Android.mk
-#     jzmq.pri
-#     readme.txt
+# <Feographia_Android>/fcore/prebuild-libs/zeromq/lib
+#     /pkgconfig
+#     libjzmq.a
+#     libjzmq.la
+#     libzmq.a
+#     libzmq.la
+
 
 
 cp /local32/jzmq/src/main/java <Feographia_Android>/jzmq/src/main

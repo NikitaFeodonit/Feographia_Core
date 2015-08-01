@@ -38,7 +38,18 @@ make -j8 && make install
 
 
 3. Copying to project
-see "Copying to project" in czmqpp/readme.txt
+
+cp $OUTPUT_DIR/include <Feographia_Android>/fcore/prebuild-libs/zeromq
+cp $OUTPUT_DIR/lib <Feographia_Android>/fcore/prebuild-libs/zeromq
+
+# must be like so:
+# <Feographia_Android>/fcore/prebuild-libs/zeromq
+#     /include
+#     /lib
+#     Android.mk
+#     zeromq.pri
+#     readme.txt
+
 
 
 4. Issue for autogen.sh

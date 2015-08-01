@@ -8,22 +8,23 @@ Building capnproto library with CrystaX NDK in Msys2 on Windows for Android
 
 
 2. Build capnproto library
+Download from: https://capnproto.org/install.html
 
-# unzip capnproto-c++-win32-0.5.2.zip
-cp capnproto-tools-win32-0.5.2/capnp.exe /usr/bin
+# unzip capnproto-c++-win32-0.5.3.zip
+cp capnproto-tools-win32-0.5.3/capnp.exe /usr/bin
 
-# untar capnproto-c++-0.5.2.tar.gz
-cd /local32/capnproto-c++-0.5.2
+# untar capnproto-c++-0.5.3.tar.gz
+cd /local32/capnproto-c++-0.5.3
 
-./configure --host=arm-linux-androideabi --enable-static --disable-shared --prefix=/local32/capnproto-c++-0.5.2_inst --with-external-capnp
+./configure --host=arm-linux-androideabi --enable-static --disable-shared --prefix=/local32/capnproto-c++-0.5.3_inst --with-external-capnp
 
 make -j8 && make install
 
 
 3. Copying to project
 
-cp /local32/capnproto-c++-0.5.2_inst/include <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
-cp /local32/capnproto-c++-0.5.2_inst/lib <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
+cp /local32/capnproto-c++-0.5.3_inst/include <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
+cp /local32/capnproto-c++-0.5.3_inst/lib <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
 
 # must be like so:
 # <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp
@@ -36,4 +37,4 @@ cp /local32/capnproto-c++-0.5.2_inst/lib <Feographia_Android>/fcore/prebuild-lib
 
 4. Copying compiled tools for Windows
 
-cp capnproto-c++-win32-0.5.2.zip/capnproto-tools-win32-0.5.2/*.exe <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp/tools
+cp capnproto-c++-win32-0.5.3.zip/capnproto-tools-win32-0.5.3/*.exe <Feographia_Android>/fcore/prebuild-libs/capnproto-cpp/tools

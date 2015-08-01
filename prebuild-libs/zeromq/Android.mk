@@ -29,20 +29,6 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := czmq-prebuilt
-LOCAL_SRC_FILES := lib/libczmq.a
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
-include $(PREBUILT_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := czmqpp-prebuilt
-LOCAL_SRC_FILES := lib/libczmq++.a
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
-include $(PREBUILT_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := jzmq-prebuilt
 LOCAL_SRC_FILES := lib/libjzmq.a
 #LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include

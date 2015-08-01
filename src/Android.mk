@@ -53,6 +53,7 @@ TARGET_PLATFORM := android-9
 LOCAL_CPPFLAGS += -fexceptions
 LOCAL_CPPFLAGS += -frtti
 LOCAL_CPPFLAGS += -std=c++11
+#LOCAL_CFLAGS   += -UNDEBUG  # comment it for release
 
 #LOCAL_EXPORT_CFLAGS := -DFOO=1
 #LOCAL_EXPORT_CPPFLAGS := -DFOO=1
