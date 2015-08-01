@@ -29,6 +29,7 @@ INCLUDEPATH += \
     $$PWD/include
 
 HEADERS += \
+    $$PWD/include/zmq.hpp \
 
 SOURCES += \
 

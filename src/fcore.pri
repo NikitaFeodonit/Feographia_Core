@@ -31,7 +31,7 @@ HEADERS += \
 #    $$PWD/fcore/capnproto/FcMsg.capnp.h \
 #    $$PWD/fcore/capnproto/FcConst.capnp.h \
     $$PWD/fcore/message/FcoreMsg.hpp \
-    $$PWD/fcore/message/SendErrorMsg.hpp
+    $$PWD/fcore/message/SendErrorMsg.hpp \
     $$PWD/fcore/message/SendFileTextMsg.hpp \
     $$PWD/fcore/Fcore.hpp \
 
@@ -39,7 +39,7 @@ SOURCES += \
 #    $$PWD/fcore/capnproto/FcMsg.capnp.c++ \
 #    $$PWD/fcore/capnproto/FcConst.capnp.c++ \
     $$PWD/fcore/message/FcoreMsg.cpp \
-    $$PWD/fcore/message/SendErrorMsg.cpp
+    $$PWD/fcore/message/SendErrorMsg.cpp \
     $$PWD/fcore/message/SendFileTextMsg.cpp \
     $$PWD/fcore/Fcore.cpp \
 

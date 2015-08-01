@@ -21,14 +21,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <string>
 #include <iostream>
-#include <fstream>
-
-#include <kj/common.h>
-#include <kj/memory.h>
-#include <kj/mutex.h>
-#include <kj/array.h>
 
 #include "fcore/message/SendErrorMsg.hpp"
 

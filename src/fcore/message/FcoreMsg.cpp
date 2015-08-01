@@ -23,10 +23,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <kj/common.h>
-#include <kj/memory.h>
-#include <kj/mutex.h>
-#include <kj/array.h>
+#include <capnp/message.h>
 
 #include "fcore/message/FcoreMsg.hpp"
 
@@ -54,18 +51,13 @@ boost::shared_ptr<capnp::MallocMessageBuilder> FcoreMsg::msgWorker()
 
     } catch (boost::exception& ex) {
         // set the error reply data
-        std::string errorMsg;
-        if (std::string const* errMsgPtr = boost::get_error_info<ErrInfoMsg>(ex) ) {
-            errorMsg += *errMsgPtr;
+        std::string errInfo;
+        if (std::string const* errInfoPtr = boost::get_error_info<FcoreErrInfo>(ex) ) {
+            errInfo += *errInfoPtr;
         }
 
-        // TODO:
-//        if (std::string const* filePathPtr = boost::get_error_info<ErrInfoFilePath>(ex) ) {
-//            errorMsg += *filePathPtr;
-//        }
-
         msgPtrR->setErrorFlag(true);
-        msgPtrR->setMsgText(errorMsg);
+        msgPtrR->setMsgText(errInfo);
     }
 
     return cpnPtrR;

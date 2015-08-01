@@ -19,14 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
 #include <iostream>
 #include <fstream>
-
-#include <kj/common.h>
-#include <kj/memory.h>
-#include <kj/mutex.h>
-#include <kj/array.h>
 
 #include "fcore/message/SendFileTextMsg.hpp"
 
@@ -49,14 +43,10 @@ boost::shared_ptr<char[]> getFileText(std::string filePath)
     }
 
     else {
-        std::string errorMsg = "Unable to open file, file path: ";
+        std::string errInfo = "Unable to open file, file path: " + filePath;
         // TODO: boost logger
         std::cout << errorMsg << filePath << std::endl;
-
-        // TODO:
-        throw FileOpenError()
-                << ErrInfoMsg(errorMsg)
-                << ErrInfoFilePath(filePath);
+        throw FcoreErrEx() << FcoreErrInfo(errInfo);
     }
 }
 
@@ -83,7 +73,6 @@ boost::shared_ptr<capnp::AnyPointer::Builder> SendFileTextMsg::dataWorker(
         FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
         dataR.setFileText(fileText.get());
     } else {
-        // TODO:
-        throw GetFileTextError() << ErrInfoMsg("getFileText() error");
+        throw FcoreErrEx() << FcoreErrInfo("getFileText() error, nullptr == fileText");
     }
 }

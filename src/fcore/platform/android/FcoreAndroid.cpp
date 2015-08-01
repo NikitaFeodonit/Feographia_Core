@@ -19,11 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <jni.h>
-#include <zmq.hpp>
 #include <streambuf>
 #include <iostream>
 
+#include <jni.h>
 #include <android/log.h>
 #define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "fcore", fmt, ##__VA_ARGS__)
 
