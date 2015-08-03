@@ -39,8 +39,11 @@ LOCAL_SRC_FILES += fcore/message/FcoreMsg.cpp
 LOCAL_SRC_FILES += fcore/message/SendErrorMsg.cpp
 LOCAL_SRC_FILES += fcore/message/SendFileTextMsg.cpp
 
+LOCAL_SRC_FILES += fcore/FcoreLog.cpp
 LOCAL_SRC_FILES += fcore/Fcore.cpp
+
 LOCAL_SRC_FILES += fcore/platform/android/FcoreAndroid.cpp
+
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
@@ -66,6 +69,7 @@ LOCAL_STATIC_LIBRARIES += capnp-prebuilt
 LOCAL_STATIC_LIBRARIES += kj-prebuilt
 LOCAL_STATIC_LIBRARIES += boost_thread_static
 LOCAL_STATIC_LIBRARIES += boost_system_static
+LOCAL_STATIC_LIBRARIES += boost_log_static
 
 LOCAL_WHOLE_STATIC_LIBRARIES :=
 LOCAL_WHOLE_STATIC_LIBRARIES += jzmq-prebuilt

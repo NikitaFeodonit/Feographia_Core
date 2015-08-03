@@ -43,6 +43,7 @@ public:
     boost::shared_ptr<capnp::MallocMessageBuilder> msgWorker();
 
 protected:
+    // TODO: typedef
     virtual boost::shared_ptr<capnp::AnyPointer::Builder> dataWorker(
             boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
             boost::shared_ptr<FcMsg::Message::Builder> msgPtrR) = 0;

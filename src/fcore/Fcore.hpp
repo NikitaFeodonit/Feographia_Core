@@ -22,9 +22,23 @@
 #ifndef FCORE_HPP
 #define FCORE_HPP
 
+#include <zmq.hpp>
 
-void fcoreMain();
-void* fcoreRunMainThread();
+#include "fcore/FcoreLog.hpp"
+
+
+class Fcore
+{
+public:
+    explicit Fcore();
+
+    static void* runMainThread();
+
+    void operator()(zmq::context_t* zmqContext);
+
+private:
+
+};
 
 
 #endif // FCORE_HPP

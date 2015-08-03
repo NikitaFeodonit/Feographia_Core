@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "fcore/FcoreLog.hpp"
 #include "fcore/message/SendFileTextMsg.hpp"
 
 
@@ -43,10 +44,9 @@ boost::shared_ptr<char[]> getFileText(std::string filePath)
     }
 
     else {
-        std::string errInfo = "Unable to open file, file path: " + filePath;
-        // TODO: boost logger
-        std::cout << errorMsg << filePath << std::endl;
-        throw FcoreErrEx() << FcoreErrInfo(errInfo);
+        std::string errMsg = "Unable to open file, file path: " + filePath;
+        BOOST_LOG_SEV(FcoreLog::log, debug) << errMsg;
+        throw FcoreErrEx() << FcoreErrInfo(errMsg);
     }
 }
 
@@ -58,13 +58,11 @@ boost::shared_ptr<capnp::AnyPointer::Builder> SendFileTextMsg::dataWorker(
     // get the query data
     FcMsg::GetFileTextQ::Reader dataQ = dataPtrQ->getAs<FcMsg::GetFileTextQ>();
     std::string path = dataQ.getFilePath().cStr();
-    // TODO: boost logger
-    std::cout << "filePath: " << path << std::endl;
+    BOOST_LOG_SEV(FcoreLog::log, debug) << "filePath: " << path;
 
     // make the reply data
     // read file
-    // TODO: boost logger
-    std::cout << "file reading" << std::endl;
+    BOOST_LOG_SEV(FcoreLog::log, debug) << "file reading";
     auto fileText = getFileText(path);
 
     // set the reply data

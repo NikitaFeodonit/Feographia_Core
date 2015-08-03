@@ -23,6 +23,7 @@
 
 #include <iostream>
 
+#include "fcore/FcoreLog.hpp"
 #include "fcore/message/SendErrorMsg.hpp"
 
 
@@ -32,8 +33,7 @@ boost::shared_ptr<capnp::AnyPointer::Builder> SendErrorMsg::dataWorker(
 {
     // make the reply data
     std::string errorMsg = "ERROR: unknown message type: " + boost::lexical_cast<std::string>(mMsgPtrQ->getMsgType());
-    // TODO: boost logger
-    std::cout << errorMsg << std::endl;
+    BOOST_LOG_SEV(FcoreLog::log, debug) << errorMsg;
 
     // set the reply type and data
     msgPtrR->setMsgType(FcConst::MSG_TYPE_ERROR);

@@ -33,6 +33,7 @@ HEADERS += \
     $$PWD/fcore/message/FcoreMsg.hpp \
     $$PWD/fcore/message/SendErrorMsg.hpp \
     $$PWD/fcore/message/SendFileTextMsg.hpp \
+    $$PWD/fcore/FcoreLog.hpp \
     $$PWD/fcore/Fcore.hpp \
 
 SOURCES += \
@@ -41,6 +42,7 @@ SOURCES += \
     $$PWD/fcore/message/FcoreMsg.cpp \
     $$PWD/fcore/message/SendErrorMsg.cpp \
     $$PWD/fcore/message/SendFileTextMsg.cpp \
+    $$PWD/fcore/FcoreLog.cpp \
     $$PWD/fcore/Fcore.cpp \
 
 OTHER_FILES += \
