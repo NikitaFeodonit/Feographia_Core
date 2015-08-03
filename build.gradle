@@ -78,7 +78,8 @@ android {
 
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
-        dependsOn capnpBuild
+// uncomment it if <Feographia_Android>/fcore/src/fcore/capnproto/*.capnp are modified
+//        dependsOn capnpBuild
         workingDir file('android-nkd')
         commandLine getNdkBuildCmd()
     }
