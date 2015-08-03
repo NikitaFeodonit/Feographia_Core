@@ -19,60 +19,71 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <streambuf>
 #include <iostream>
+#include <unistd.h>
+#include <pthread.h>
+
+#include <android/log.h>
 
 #include <jni.h>
-#include <android/log.h>
-#define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "fcore", fmt, ##__VA_ARGS__)
+#define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "Fcore", fmt, ##__VA_ARGS__)
 
 #include "fcore/Fcore.hpp"
 
 
-// http://stackoverflow.com/a/8870278
-// redirect the "stdout" to android log
-class androidbuf : public std::streambuf {
-public:
-    enum { bufsize = 128 }; // ... or some other suitable buffer size
-    androidbuf() { this->setp(buffer, buffer + bufsize - 1); }
+// Redirect the "stdout" and "stderr" to android logcat.
+// https://codelab.wordpress.com/2014/11/03/how-to-use-standard-output-streams-for-logging-in-android-apps/
+// http://stackoverflow.com/a/31777050/4727406
 
-private:
-    int overflow(int c)
-    {
-        if (c == traits_type::eof()) {
-            *this->pptr() = traits_type::to_char_type(c);
-            this->sbumpc();
-        }
-        return this->sync()? traits_type::eof(): traits_type::not_eof(c);
+static int logcat_pfd[2];
+static pthread_t stdouts_thread;
+static const char *logcat_tag;
+
+
+static void *stdouts_thread_func(void*)
+{
+    ssize_t rdsz;
+    char buf[256];
+    while((rdsz = read(logcat_pfd[0], buf, sizeof buf - 1)) > 0) {
+        // if(buf[rdsz - 1] == '\n') --rdsz; // commented because of problem with truncated strings
+        buf[rdsz - 1] = 0;  /* add null-terminator */
+        __android_log_write(ANDROID_LOG_DEBUG, logcat_tag, buf);
+    }
+    return 0;
+}
+
+
+int redirect_stdouts_to_logcat(const char *app_name)
+{
+    logcat_tag = app_name;
+
+    /* make stdout line-buffered and stderr unbuffered */
+    setvbuf(stdout, 0, _IOLBF, 0);
+    setvbuf(stderr, 0, _IONBF, 0);
+
+    /* create the pipe and redirect stdout and stderr */
+    pipe(logcat_pfd);
+    dup2(logcat_pfd[1], 1);
+    dup2(logcat_pfd[1], 2);
+
+    /* spawn the logging thread */
+    if(pthread_create(&stdouts_thread, 0, stdouts_thread_func, 0) == -1) {
+        return -1;
     }
 
-    int sync()
-    {
-        int rc = 0;
-        if (this->pbase() != this->pptr()) {
-            char writebuf[bufsize+1];
-            memcpy(writebuf, this->pbase(), this->pptr() - this->pbase());
-            writebuf[this->pptr() - this->pbase()] = '\0';
-
-            rc = __android_log_write(ANDROID_LOG_INFO, "std", writebuf) > 0;
-            this->setp(buffer, buffer + bufsize - 1);
-        }
-        return rc;
-    }
-
-    char buffer[bufsize];
-};
+    pthread_detach(stdouts_thread);
+    return 0;
+}
 
 
 extern "C"
 jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
-    // TODO: boost logger
-    std::cout.rdbuf(new androidbuf);
+    redirect_stdouts_to_logcat("Fcore");
 
-    LOG("main thread: %s", "starting");
-    jlong zmqContextPointer = (jlong) fcoreRunMainThread();
-    LOG("main thread: %s", "started");
+    LOG("Fcore main thread %s", "starting");
+    jlong zmqContextPointer = (jlong) Fcore::runMainThread();
+    LOG("Fcore main thread %s", "started");
 
     return zmqContextPointer;
 }
