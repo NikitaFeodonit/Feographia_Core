@@ -46,7 +46,7 @@ static void *stdouts_thread_func(void*)
     ssize_t rdsz;
     char buf[256];
     while((rdsz = read(logcat_pfd[0], buf, sizeof buf - 1)) > 0) {
-        if(buf[rdsz - 1] == '\n') --rdsz;
+//        if(buf[rdsz - 1] == '\n') --rdsz;
         buf[rdsz] = 0;  /* add null-terminator */
         __android_log_write(ANDROID_LOG_DEBUG, logcat_tag, buf);
     }
