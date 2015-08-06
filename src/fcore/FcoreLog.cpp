@@ -75,7 +75,7 @@ void FcoreLog::initFcoreLog()
     sink->locked_backend()->add_stream(stream);
 
                          sink->set_formatter(
-                             logexpr::format("-Fcore-\n\n\nFC: %1% [%2%] %3%")
+                             logexpr::format("FC: %1% [%2%] %3%")
                              % timestamp
                              % severity
                              % logexpr::smessage
