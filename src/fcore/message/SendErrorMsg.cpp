@@ -27,7 +27,7 @@
 #include "fcore/message/SendErrorMsg.hpp"
 
 
-boost::shared_ptr<capnp::AnyPointer::Builder> SendErrorMsg::dataWorker(
+void SendErrorMsg::dataWorker(
         boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
         boost::shared_ptr<FcMsg::Message::Builder> msgPtrR)
 {

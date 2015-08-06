@@ -51,7 +51,7 @@ boost::shared_ptr<char[]> getFileText(std::string filePath)
 }
 
 
-boost::shared_ptr<capnp::AnyPointer::Builder> SendFileTextMsg::dataWorker(
+void SendFileTextMsg::dataWorker(
         boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
         boost::shared_ptr<FcMsg::Message::Builder> msgPtrR)
 {
