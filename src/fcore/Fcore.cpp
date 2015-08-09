@@ -110,7 +110,7 @@ void Fcore::operator()(zmq::context_t* zmqContext)
 
 void* Fcore::runMainThread()
 {
-    std::cout << "-Fg-\n\n\nFC: logger initialization" << std::endl;
+    std::cout << "logger initialization" << std::endl;
     FcoreLog::initFcoreLog();
     BOOST_LOG_SEV(FcoreLog::log, info) << "logger is initialized";
 
