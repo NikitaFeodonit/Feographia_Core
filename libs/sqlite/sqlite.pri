@@ -25,35 +25,15 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += \
-    $$PWD \
+    $$PWD/src \
 
 HEADERS += \
-#    $$PWD/fcore/capnproto/FcMsg.capnp.h \
-#    $$PWD/fcore/capnproto/FcConst.capnp.h \
-    $$PWD/fcore/message/FcoreMsg.hpp \
-    $$PWD/fcore/message/SendErrorMsg.hpp \
-    $$PWD/fcore/message/SendFileTextMsg.hpp \
-    $$PWD/fcore/FcoreLog.hpp \
-    $$PWD/fcore/Fcore.hpp \
+    $$PWD/src/sqlite3.h \
+#    $$PWD/src/sqlite3ext.h \
 
 SOURCES += \
-#    $$PWD/fcore/capnproto/FcMsg.capnp.c++ \
-#    $$PWD/fcore/capnproto/FcConst.capnp.c++ \
-    $$PWD/fcore/message/FcoreMsg.cpp \
-    $$PWD/fcore/message/SendErrorMsg.cpp \
-    $$PWD/fcore/message/SendFileTextMsg.cpp \
-    $$PWD/fcore/FcoreLog.cpp \
-    $$PWD/fcore/Fcore.cpp \
+    $$PWD/src/sqlite3.c \
+#    $$PWD/src/shell.c \
 
 OTHER_FILES += \
-    $$PWD/fcore/capnproto/capnp-compile.cmd \
-    $$PWD/fcore/capnproto/capnp-main.cmd \
-    \
-    $$PWD/fcore/capnproto/FcMsg.capnp \
-    $$PWD/fcore/capnproto/FcConst.capnp \
-
-
-include(../prebuild-libs/zeromq/zeromq.pri)
-include(../prebuild-libs/capnproto-cpp/capnproto-cpp.pri)
-include(../libs/sqlite/sqlite.pri)
-include(../libs/SQLiteCpp/SQLiteCpp.pri)
+    $$PWD/Android.mk

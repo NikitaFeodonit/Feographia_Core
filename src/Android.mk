@@ -70,13 +70,17 @@ LOCAL_STATIC_LIBRARIES += kj-prebuilt
 LOCAL_STATIC_LIBRARIES += boost_thread_static
 LOCAL_STATIC_LIBRARIES += boost_system_static
 LOCAL_STATIC_LIBRARIES += boost_log_static
+LOCAL_STATIC_LIBRARIES += SQLiteCpp
 
 LOCAL_WHOLE_STATIC_LIBRARIES :=
 LOCAL_WHOLE_STATIC_LIBRARIES += jzmq-prebuilt
 
+
 include $(BUILD_SHARED_LIBRARY)
+
 
 $(call import-add-path,$(LOCAL_PATH)/..)
 $(call import-module,prebuild-libs/zeromq)
 $(call import-module,prebuild-libs/capnproto-cpp)
+$(call import-module,libs/SQLiteCpp)
 $(call import-module,boost/1.58.0)
