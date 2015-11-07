@@ -19,6 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
@@ -43,4 +44,4 @@ SOURCES += \
     $$PWD/src/Transaction.cpp \
 
 OTHER_FILES += \
-    $$PWD/Android.mk
+    $$PWD/Android.mk \

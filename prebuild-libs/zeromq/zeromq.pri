@@ -26,7 +26,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += \
-    $$PWD/include
+    $$PWD/include \
 
 HEADERS += \
     $$PWD/include/zmq.hpp \
