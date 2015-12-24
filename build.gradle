@@ -121,6 +121,7 @@ model {
             jniLibs.source.srcDirs = ['android-nkd/libs']
 
             // for project compiling and assembling
+            // Comment it for source editing in Android Studio.
             jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
 
             // Only for source editing in Android Studio, not for project compiling and assembling.
