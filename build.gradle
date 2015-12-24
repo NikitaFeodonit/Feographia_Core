@@ -120,6 +120,7 @@ model {
 
             jniLibs.source.srcDirs = ['android-nkd/libs']
 
+            // TODO: use productFlavors or buildTypes
             // for project compiling and assembling
             // Comment it for source editing in Android Studio.
             jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
@@ -131,11 +132,8 @@ model {
         }
     }
 
-    // android.ndk is only for source editing in Android Studio, not for compiling.
-    // Uncomment it for source editing in Android Studio.
-    // See also jni.source.srcDirs
-
-/*
+    // Only for source editing in Android Studio, not for compiling.
+    // Has not effect if jni.source.srcDirs = []
     android.ndk {
         moduleName = "fcore"
 
@@ -162,7 +160,6 @@ model {
         cppFlags.add("-I${file("libs/SQLiteCpp/src/include")}".toString())
         cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
     }
-*/
 
 
     android.buildTypes {
