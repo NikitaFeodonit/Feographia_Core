@@ -21,82 +21,151 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.model.library'
 
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+model {
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.1"
 
-    defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 23
-        versionCode 1
-        versionName "0.1"
+        defaultConfig.with {
+            minSdkVersion.apiLevel = 9
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "0.1"
+        }
+
+// compile native
+
+        task capnpBuild(type: Exec) {
+            workingDir file('src/fcore/capnproto')
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine getWinCmd(), getWinCmdArg(), getCapnpCmd()
+            } else {
+                // TODO: for others (linux ...)
+            }
+        }
+
+        // call regular ndk-build(.cmd) script from app directory
+        task ndkBuild(type: Exec) {
+            // uncomment it if <Feographia_Android>/fcore/src/fcore/capnproto.capnp are modified
+            //dependsOn capnpBuild
+            workingDir file('android-nkd')
+            commandLine getNdkBuildCmd()
+        }
+
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn ndkBuild
+        }
+
+// clean native
+
+        task cleanNative(type: Exec) {
+            workingDir file('android-nkd')
+            commandLine getNdkBuildCmd(), 'clean'
+        }
+
+        clean.dependsOn cleanNative
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'android-nkd/proguard-rules.pro'
+
+// for new experimental gradle version 0.4.0
+// http://stackoverflow.com/a/31805506
+//    manifest.srcFile = 'main/AndroidManifest.xml'
+//    android.sources {
+//        main {
+//            manifest.source {
+//                srcDir 'main'
+//                include 'AndroidManifest.xml'
+//            }
+//            java.source.srcDirs = ['src/main/java']
+//        }
+//    }
+
+// all android.sources values
+// (from sources,
+// http://jcenter.bintray.com/com/android/tools/build/gradle-experimental/0.4.0/gradle-experimental-0.4.0-sources.jar
+// )
+//    android.sources {
+//        main {
+//            manifest.source.srcFile = 'main/AndroidManifest.xml'
+//
+//            java.source.srcDirs = ['src/main/jni', '../../../common']
+//            res.source.srcDirs = ['src/main/jni', '../../../common']
+//            assets.source.srcDirs = ['src/main/jni', '../../../common']
+//
+//            jni.source.srcDirs = ['src/main/jni', '../../../common']
+//            jniLibs.source.srcDirs = ['src/main/jni', '../../../common']
+//
+//            resources.source.srcDirs = ['src/main/jni', '../../../common']
+//            aidl.source.srcDirs = ['src/main/jni', '../../../common']
+//            renderscript.source.srcDirs = ['src/main/jni', '../../../common']
+//
+// form old version // sourceSets.androidTest.setRoot('src/androidTest') // tests
+//        }
+//    }
+
+
+    android.sources {
+        main {
+            // TODO: change it for not experimental gradle version
+            // to like this
+            // sourceSets.main.manifest.srcFile 'android-nkd/AndroidManifest.xml'
+            manifest.source {
+                srcDir 'android-nkd'
+                include 'AndroidManifest.xml'
+            }
+
+            res.source.srcDirs = ['android-nkd/res']
+
+            // for native compiling
+            jniLibs.source.srcDirs = [ 'android-nkd/libs' ]
+            jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
+
+/*
+            // only for source editing, not for compiling
+            jni.source.srcDirs = ['src']
+            jniLibs.source.srcDirs = [
+                    'android-nkd/libs',
+                    'src',
+                    'prebuild-libs/zeromq/include',
+                    'prebuild-libs/capnproto-cpp/include',
+                    'libs/sqlite/src',
+                    'libs/SQLiteCpp/src/include',
+                    getNdkDir() + '/sources/boost/1.58.0/include',
+            ]
+*/
         }
     }
-    productFlavors {
+
+    // only for source editing, not for compiling
+    android.ndk {
+        moduleName = "fcore"
+
+        stl = "gnustl_static" // you can switch stl lib this way
+
+        ldLibs.add("log")
+        cppFlags.add("-g")
+        cppFlags.add("-std=c++11") // use c++11
+        cppFlags.add("-Wall")
+
+        // include folders
+        cppFlags.add("-I${file("android-nkd/libs")}".toString())
+        cppFlags.add("-I${file("src")}".toString())
+        cppFlags.add("-I${file("prebuild-libs/zeromq/include")}".toString())
+        cppFlags.add("-I${file("prebuild-libs/capnproto-cpp/include")}".toString())
+        cppFlags.add("-I${file("libs/sqlite/src")}".toString())
+        cppFlags.add("-I${file("libs/SQLiteCpp/src/include")}".toString())
+        cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
     }
 
 
-// default project structure
-//    sourceSets.main.manifest.srcFile 'main/AndroidManifest.xml'
-//
-//    sourceSets.main.java.srcDirs = ['src/main/java']
-//    sourceSets.main.res.srcDirs = ['src/main/res'] // android resources
-//    sourceSets.main.assets.srcDirs = ['src/main/assets']
-//
-//    sourceSets.main.jni.srcDirs = ['src/main/jni']
-//    sourceSets.main.jniLibs.srcDirs = ['src/main/libs']
-//
-//    sourceSets.main.resources.srcDirs = ['src/resources'] // java resources
-//    sourceSets.main.aidl.srcDirs = ['src/main/aidl']
-//    sourceSets.main.renderscript.srcDirs = ['src/main/rs']
-//
-//    sourceSets.androidTest.setRoot('src/androidTest') // tests
-
-
-    sourceSets.androidTest.setRoot('android-nkd/androidTest') // tests
-
-    sourceSets.main.manifest.srcFile 'android-nkd/AndroidManifest.xml'
-    sourceSets.main.res.srcDirs = ['android-nkd/res'] // android resources
-
-    sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-    sourceSets.main.jniLibs.srcDir 'android-nkd/libs'
-
-
-    task capnpBuild(type: Exec) {
-        workingDir file('src/fcore/capnproto')
-        commandLine getWinCmd(), getWinCmdArg(), getCapnpCmd()
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file('proguard-rules.pro'))
+        }
     }
-
-
-    // call regular ndk-build(.cmd) script from app directory
-    task ndkBuild(type: Exec) {
-// uncomment it if <Feographia_Android>/fcore/src/fcore/capnproto/*.capnp are modified
-//        dependsOn capnpBuild
-        workingDir file('android-nkd')
-        commandLine getNdkBuildCmd()
-    }
-
-
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
-    }
-
-
-    task cleanNative(type: Exec) {
-        workingDir file('android-nkd')
-        commandLine getNdkBuildCmd(), 'clean'
-    }
-
-
-    clean.dependsOn cleanNative
 }
 
 
@@ -113,7 +182,8 @@ def getNdkDir() {
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def ndkdir = properties.getProperty('ndk.dir', null)
     if (ndkdir == null)
-        throw new GradleException("NDK location not found. Define location with ndk.dir in the local.properties file or with an ANDROID_NDK_ROOT environment variable.")
+        throw new GradleException("NDK location not found. Define location with ndk.dir " +
+                "in the local.properties file or with an ANDROID_NDK_ROOT environment variable.")
 
     return ndkdir
 }
@@ -121,33 +191,37 @@ def getNdkDir() {
 
 def getNdkBuildCmd() {
     def ndkbuild = getNdkDir() + "/ndk-build"
-    if (Os.isFamily(Os.FAMILY_WINDOWS))
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         ndkbuild += ".cmd"
-
+    }
     return ndkbuild
 }
 
 
 def getWinCmd() {
     def winCmd = ""
-    if (Os.isFamily(Os.FAMILY_WINDOWS))
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         winCmd = "cmd"
+    }
     return winCmd
 }
 
 
 def getWinCmdArg() {
     def winCmdArg = ""
-    if (Os.isFamily(Os.FAMILY_WINDOWS))
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         winCmdArg = "/c"
+    }
     return winCmdArg
 }
 
 
 def getCapnpCmd() {
-// TODO: for linux
     def capnpCmd = ""
-    if (Os.isFamily(Os.FAMILY_WINDOWS))
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         capnpCmd = "capnp-main.cmd"
+    } else {
+        // TODO: for others (linux ...)
+    }
     return capnpCmd
 }
