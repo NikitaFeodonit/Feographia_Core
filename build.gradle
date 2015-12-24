@@ -133,7 +133,7 @@ model {
     }
 
     // Only for source editing in Android Studio, not for compiling.
-    // Has not effect if jni.source.srcDirs = []
+    // Has no effect if jni.source.srcDirs = []
     android.ndk {
         moduleName = "fcore"
 
