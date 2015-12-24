@@ -35,6 +35,7 @@ SOURCES += \
 OTHER_FILES += \
     $$PWD/Android.mk \
     $$PWD/../android-nkd/jni/Application.mk \
+#    $$PWD/../.clang-format \  # see archive folder
 
 # from Crystax NDK
 INCLUDEPATH += \
