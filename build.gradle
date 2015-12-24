@@ -118,36 +118,39 @@ model {
 
             res.source.srcDirs = ['android-nkd/res']
 
-            // for native compiling
-            jniLibs.source.srcDirs = [ 'android-nkd/libs' ]
+            jniLibs.source.srcDirs = ['android-nkd/libs']
+
+            // for project compiling and assembling
             jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
 
-/*
-            // only for source editing, not for compiling
-            jni.source.srcDirs = ['src']
-            jniLibs.source.srcDirs = [
-                    'android-nkd/libs',
-                    'src',
-                    'prebuild-libs/zeromq/include',
-                    'prebuild-libs/capnproto-cpp/include',
-                    'libs/sqlite/src',
-                    'libs/SQLiteCpp/src/include',
-                    getNdkDir() + '/sources/boost/1.58.0/include',
-            ]
-*/
+            // Only for source editing in Android Studio, not for project compiling and assembling.
+            // Uncomment it for source editing in Android Studio.
+            // See also android.ndk
+//            jni.source.srcDirs = ['src']
         }
     }
 
-    // only for source editing, not for compiling
+    // android.ndk is only for source editing in Android Studio, not for compiling.
+    // Uncomment it for source editing in Android Studio.
+    // See also jni.source.srcDirs
+
+/*
     android.ndk {
         moduleName = "fcore"
 
-        stl = "gnustl_static" // you can switch stl lib this way
+//        stl = "gnustl_static" // you can switch stl lib this way
 
         ldLibs.add("log")
-        cppFlags.add("-g")
-        cppFlags.add("-std=c++11") // use c++11
-        cppFlags.add("-Wall")
+
+        // Produce debugging information in the operating system's native format
+        // (stabs, COFF, XCOFF, or DWARF 2). GDB can work with this debugging information.
+//        cppFlags.add("-g")
+
+//        cppFlags.add("-Wall")
+
+        cppFlags.add("-fexceptions")
+        cppFlags.add("-frtti")
+        cppFlags.add("-std=c++11")
 
         // include folders
         cppFlags.add("-I${file("android-nkd/libs")}".toString())
@@ -158,6 +161,7 @@ model {
         cppFlags.add("-I${file("libs/SQLiteCpp/src/include")}".toString())
         cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
     }
+*/
 
 
     android.buildTypes {
