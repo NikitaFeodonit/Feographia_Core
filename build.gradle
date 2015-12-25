@@ -137,19 +137,19 @@ model {
     android.ndk {
         moduleName = "fcore"
 
-//        stl = "gnustl_static" // you can switch stl lib this way
+        // http://developer.android.com/ndk/guides/cpp-support.html#runtimes
+        // file:///<path to ndk>/docs/Programmers_Guide/html/md_3__key__topics__building__a_p_p_l_i_c_a_t_i_o_n-_m_k.html
+        stl = "gnustl_shared"
 
-        ldLibs.add("log")
+        cppFlags.add("-std=c++11")
+        cppFlags.add("-fexceptions")
+        cppFlags.add("-frtti")
 
         // Produce debugging information in the operating system's native format
         // (stabs, COFF, XCOFF, or DWARF 2). GDB can work with this debugging information.
 //        cppFlags.add("-g")
 
 //        cppFlags.add("-Wall")
-
-        cppFlags.add("-fexceptions")
-        cppFlags.add("-frtti")
-        cppFlags.add("-std=c++11")
 
         // include folders
         cppFlags.add("-I${file("android-nkd/libs")}".toString())
@@ -159,6 +159,8 @@ model {
         cppFlags.add("-I${file("libs/sqlite/src")}".toString())
         cppFlags.add("-I${file("libs/SQLiteCpp/src/include")}".toString())
         cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
+
+        ldLibs.add("log")
     }
 
 

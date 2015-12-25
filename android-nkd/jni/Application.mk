@@ -19,6 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# http://developer.android.com/intl/ru/ndk/guides/application_mk.html
+
 #APP_ABI := all
 APP_ABI := armeabi-v7a
 
@@ -30,7 +32,16 @@ APP_BUILD_SCRIPT := ../src/Android.mk
 #APP_CFLAGS :=
 #APP_CPPFLAGS :=
 #APP_LDFLAGS :=
-#APP_GNUSTL_CPP_FEATURES := exceptions rtti
+
+
+# http://developer.android.com/ndk/guides/cpp-support.html#runtimes
+# file:///<path to ndk>/docs/Programmers_Guide/html/md_3__key__topics__building__a_p_p_l_i_c_a_t_i_o_n-_m_k.html
+APP_STL := gnustl_shared # default. CrystaX uses gnustl_shared for prebuilded boost and others.
+
+APP_CPPFLAGS += -std=c++11
+APP_CPPFLAGS += -fexceptions
+APP_CPPFLAGS += -frtti
+
 
 
 # This optional variable can be defined to either 'release' or 'debug'.
