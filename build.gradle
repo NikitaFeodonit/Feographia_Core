@@ -56,7 +56,7 @@ model {
         }
 
         tasks.withType(JavaCompile) {
-            compileTask -> compileTask.dependsOn ndkBuild
+//            compileTask -> compileTask.dependsOn ndkBuild
         }
 
 // clean native
@@ -66,7 +66,19 @@ model {
             commandLine getNdkBuildCmd(), 'clean'
         }
 
-        clean.dependsOn cleanNative
+//        clean.dependsOn cleanNative
+
+// http://ph0b.com/new-android-studio-ndk-support/
+
+        // http://ph0b.com/new-android-studio-ndk-support/#comment-50870
+        // To fall back to Android.mk/Application.mk,
+        // I prefer to provide the actual jni directory (or directories), but disable the build step:
+//        tasks.all {
+//            task -> if (task.name.contains('compileDebugNdk')
+//                    || task.name.contains('compileReleaseNdk')
+//            )
+//                task.enabled = false
+//        }
     }
 
 // for new experimental gradle version 0.4.0
@@ -118,32 +130,53 @@ model {
 
             res.source.srcDirs = ['android-nkd/res']
 
-            jniLibs.source.srcDirs = ['android-nkd/libs']
+//            jniLibs.source.srcDirs = ['android-nkd/libs']
 
             // TODO: use productFlavors or buildTypes
             // for project compiling and assembling
             // Comment it for source editing in Android Studio.
-            jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
+//            jni.source.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
 
             // Only for source editing in Android Studio, not for project compiling and assembling.
             // Uncomment it for source editing in Android Studio.
             // See also android.ndk
 //            jni.source.srcDirs = ['src']
+            // TODO: all libs in one dir
+            jni.source.srcDirs = [
+                    'src',
+                    'libs',
+                    'prebuild-libs'
+            ]
         }
     }
 
     // Only for source editing in Android Studio, not for compiling.
     // Has no effect if jni.source.srcDirs = []
+    // Keeping it to make AS correctly support C++ code editing and debugging
     android.ndk {
         moduleName = "fcore"
 
+        platformVersion = 9
+
+        toolchain = "gcc"
+        toolchainVersion = "4.9"
+        abiFilters.add("armeabi-v7a")
+
+//        debuggable = true
+//        renderscriptNdkMode = false
+
         // http://developer.android.com/ndk/guides/cpp-support.html#runtimes
         // file:///<path to ndk>/docs/Programmers_Guide/html/md_3__key__topics__building__a_p_p_l_i_c_a_t_i_o_n-_m_k.html
-        stl = "gnustl_shared"
+//        stl = "gnustl_shared"
+        stl = "gnustl_static" // may be for release
 
-        cppFlags.add("-std=c++11")
-        cppFlags.add("-fexceptions")
-        cppFlags.add("-frtti")
+// see used flags in compilation
+// <fcore>/build/tmp/compileArmeabi-v7a<Debug|Release>FcoreSharedLibraryFcoreMainC/options.txt
+// <fcore>/build/tmp/compileArmeabi-v7a<Debug|Release>FcoreSharedLibraryFcoreMainCpp/options.txt
+// <fcore>/build/tmp/linkArmeabi-v7a<Debug|Release>FcoreSharedLibrary/options.txt
+
+// ndk-build debug output for used flags
+// ndk-build[.cmd] V=1
 
         // Produce debugging information in the operating system's native format
         // (stabs, COFF, XCOFF, or DWARF 2). GDB can work with this debugging information.
@@ -151,16 +184,55 @@ model {
 
 //        cppFlags.add("-Wall")
 
-        // include folders
-        cppFlags.add("-I${file("android-nkd/libs")}".toString())
+//  ===  CFlags  ===
+
+        CFlags.add("-DSQLITE_THREADSAFE=2")
+
+        CFlags.add("-I${file("libs/sqlite/src")}".toString())
+        CFlags.add("-I${file(getNdkDir() + "/sources/crystax/include")}".toString())
+
+//  ===  cppFlags  ===
+
+        cppFlags.add("-fexceptions")
+        cppFlags.add("-frtti")
+        cppFlags.add("-std=c++11")
+
         cppFlags.add("-I${file("src")}".toString())
         cppFlags.add("-I${file("prebuild-libs/zeromq/include")}".toString())
         cppFlags.add("-I${file("prebuild-libs/capnproto-cpp/include")}".toString())
-        cppFlags.add("-I${file("libs/sqlite/src")}".toString())
         cppFlags.add("-I${file("libs/SQLiteCpp/src/include")}".toString())
-        cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
+        cppFlags.add("-I${file("libs/sqlite/src")}".toString())
 
-        ldLibs.add("log")
+        cppFlags.add("-I${file(getNdkDir() + "/sources/boost/1.58.0/include")}".toString())
+        cppFlags.add("-I${file(getNdkDir() + "/sources/crystax/include")}".toString())
+
+//  ===  ldFlags  ===
+
+        ldFlags.add("-Wl,--whole-archive")
+        ldFlags.add("${file("prebuild-libs/zeromq/lib/libjzmq.a")}".toString())
+        ldFlags.add("-Wl,--no-whole-archive")
+        ldFlags.add("${file("prebuild-libs/zeromq/lib/libzmq.a")}".toString())
+
+        ldFlags.add("${file("prebuild-libs/capnproto-cpp/lib/libcapnp.a")}".toString())
+        ldFlags.add("${file("prebuild-libs/capnproto-cpp/lib/libkj.a")}".toString())
+
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_log.a")}".toString())
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_chrono.a")}".toString())
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_thread.a")}".toString())
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_date_time.a")}".toString())
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_filesystem.a")}".toString())
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_regex.a")}".toString())
+
+        ldFlags.add("${file(getNdkDir() + "/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a/thumb/libgnustl_static.a")}".toString())
+
+        ldFlags.add("${file(getNdkDir() + "/sources/boost/1.58.0/libs/armeabi-v7a/libboost_system.a")}".toString())
+
+        ldFlags.add("-llog")
+
+        ldFlags.add("-L${file(getNdkDir() + "/sources/crystax/empty")}".toString())
+
+        ldFlags.add("${file(getNdkDir() + "/sources/crystax/libs/armeabi-v7a/thumb/libcrystax.a")}".toString())
+//        ldFlags.add("${file(getNdkDir() + "/sources/crystax/libs/armeabi-v7a/thumb/libcrystax.so")}".toString())
     }
 
 
