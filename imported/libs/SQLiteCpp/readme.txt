@@ -13,7 +13,7 @@ cp SQLiteCpp/src/*.cpp <Feographia_Android>/fcore/libs/SQLiteCpp/src
 cp SQLiteCpp/include <Feographia_Android>/fcore/libs/SQLiteCpp/src
 
 # must be like so:
-# <Feographia_Android>/fcore/libs/sqlite/src
+# <Feographia_Android>/fcore/libs/SQLiteCpp/src
 #     /include/SQLiteCpp
 #         Assertion.h
 #         Column.h

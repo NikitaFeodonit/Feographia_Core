@@ -80,7 +80,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 
 $(call import-add-path,$(LOCAL_PATH)/..)
-$(call import-module,prebuild-libs/zeromq)
-$(call import-module,prebuild-libs/capnproto-cpp)
-$(call import-module,libs/SQLiteCpp)
-$(call import-module,boost/1.58.0)
+$(call import-module,imported/libs_prebuilt/zeromq)
+$(call import-module,imported/libs_prebuilt/capnproto-cpp)
+$(call import-module,imported/libs/SQLiteCpp)
+$(call import-module,boost/1.59.0)

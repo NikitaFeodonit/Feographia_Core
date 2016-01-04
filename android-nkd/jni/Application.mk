@@ -25,7 +25,7 @@
 APP_ABI := armeabi-v7a
 
 APP_PLATFORM := android-9
-NDK_TOOLCHAIN_VERSION := 4.9
+NDK_TOOLCHAIN_VERSION := 5
 
 APP_BUILD_SCRIPT := ../src/Android.mk
 
@@ -36,9 +36,9 @@ APP_BUILD_SCRIPT := ../src/Android.mk
 
 # http://developer.android.com/ndk/guides/cpp-support.html#runtimes
 # file:///<path to ndk>/docs/Programmers_Guide/html/md_3__key__topics__building__a_p_p_l_i_c_a_t_i_o_n-_m_k.html
-APP_STL := gnustl_shared # default. CrystaX uses gnustl_shared for prebuilded boost and others.
-#APP_STL := gnustl_static
-#APP_LIBCRYSTAX := static
+#APP_STL := gnustl_shared # default. CrystaX uses gnustl_shared for prebuilded boost and others.
+APP_STL := gnustl_static
+APP_LIBCRYSTAX := static
 
 #APP_OPTIM := debug
 

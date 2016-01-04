@@ -30,6 +30,7 @@ LOCAL_MODULE := SQLiteCpp
 LOCAL_CPP_EXTENSION := .cpp
 
 LOCAL_SRC_FILES :=
+LOCAL_SRC_FILES += src/Backup.cpp
 LOCAL_SRC_FILES += src/Column.cpp
 LOCAL_SRC_FILES += src/Database.cpp
 LOCAL_SRC_FILES += src/Statement.cpp
@@ -49,4 +50,4 @@ include $(BUILD_STATIC_LIBRARY)
 
 
 $(call import-add-path,$(LOCAL_PATH)/..)
-$(call import-module,libs/sqlite)
+$(call import-module,imported/libs/sqlite)
