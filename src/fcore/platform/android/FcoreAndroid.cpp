@@ -46,18 +46,18 @@ static void *stdouts_thread_func(void*)
     ssize_t rdsz;
     char buf[256];
 
-    // workaround for andorid logcat formatting
+    // workaround for android logcat formatting
     buf[0] = '-';
     buf[1] = 'F';
     buf[2] = 'g';
     buf[3] = '-';
-    buf[4] = '\n';
-    buf[5] = '\n';
-    buf[6] = '\n';
+    buf[4] = ' ';
 
-    while((rdsz = read(logcat_pfd[0], buf + 7, sizeof buf - 1 - 7)) > 0) {
+    int logPrefixSize = 5;
+
+    while((rdsz = read(logcat_pfd[0], buf + logPrefixSize, sizeof buf - 1 - logPrefixSize)) > 0) {
 //        if(buf[rdsz + 7 - 1 ] == '\n') --rdsz;
-        buf[rdsz + 7] = 0;  /* add null-terminator */
+        buf[rdsz + logPrefixSize] = 0;  /* add null-terminator */
         __android_log_write(ANDROID_LOG_DEBUG, logcat_tag, buf);
     }
     return 0;
@@ -92,9 +92,9 @@ jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thi
 {
     redirect_stdouts_to_logcat("Fcore");
 
-    LOG("-Fg-\n\n\nFC: main thread %s", "starting");
+    LOG("-Fg- FC: main thread %s", "starting");
     jlong zmqContextPointer = (jlong) Fcore::runMainThread();
-    LOG("-Fg-\n\n\nFC: main thread %s", "started");
+    LOG("-Fg- FC: main thread %s", "started");
 
     return zmqContextPointer;
 }
