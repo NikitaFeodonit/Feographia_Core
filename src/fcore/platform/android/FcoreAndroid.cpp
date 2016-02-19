@@ -34,7 +34,7 @@
 
 // Redirect the "stdout" and "stderr" to android logcat.
 // https://codelab.wordpress.com/2014/11/03/how-to-use-standard-output-streams-for-logging-in-android-apps/
-// http://stackoverflow.com/a/31777050/4727406
+// http://stackoverflow.com/a/31777050
 
 static int logcat_pfd[2];
 static pthread_t stdouts_thread;

@@ -52,7 +52,7 @@ boost::shared_ptr<capnp::MallocMessageBuilder> FcoreMsg::msgWorker()
     } catch (boost::exception& ex) {
         // set the error reply data
         std::string errInfo;
-        if (std::string const* errInfoPtr = boost::get_error_info<FcoreErrInfo>(ex) ) {
+        if (const std::string* errInfoPtr = boost::get_error_info <FcoreErrInfo>(ex)) {
             errInfo += *errInfoPtr;
         }
 

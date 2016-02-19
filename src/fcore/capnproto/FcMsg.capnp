@@ -28,6 +28,8 @@ using Java = import "/capnp/java.capnp";
 $Java.package("ru.feographia.capnproto");
 $Java.outerClassname("FcMsg");
 
+using FcConst = import "FcConst.capnp";
+
 
 struct Message
 {
@@ -41,23 +43,35 @@ struct Message
 struct Reference
 {
   bookId @0 :Text;
-  chapterId @1 :Int32;
-  fromVerseId @2 :Int32;
-  toVerseId @3 :Int32;
+  chapterId @1 :UInt8;
+  verseId @2 :UInt8;
+  wordInVerseId @3 :UInt8 = FcConst.unknownId;
 }
 
 
-struct GetChapterQ
+struct GetFragmentTextQ
 {
-  reference @0 :Reference;
+  fromReference @0 :Reference;
+  toReference @1 :Reference;
 }
-struct GetChapterR
+struct GetFragmentTextR
 {
-  chapterText @0 :Text;
+  fragmentText @0 :Text;
 }
 
 
 # for test
+
+struct CreateTestModuleQ
+{
+  modulePath @0 :Text;
+}
+struct CreateTestModuleR
+{
+  reportText @0 :Text;
+}
+
+
 struct GetFileTextQ
 {
   filePath @0 :Text;

@@ -19,11 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "fcore/message/SendFileTextMsg.hpp"
+
 #include <iostream>
 #include <fstream>
 
 #include "fcore/FcoreLog.hpp"
-#include "fcore/message/SendFileTextMsg.hpp"
 
 
 boost::shared_ptr<char[]> getFileText(std::string filePath)

@@ -19,6 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "fcore/Fcore.hpp"
+
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 
@@ -31,8 +33,8 @@
 
 #include "fcore/message/SendErrorMsg.hpp"
 #include "fcore/message/SendFileTextMsg.hpp"
-#include "fcore/FcoreLog.hpp"
-#include "fcore/Fcore.hpp"
+#include "fcore/message/CreateTestModuleMsg.h"
+#include "fcore/message/GetFragmentTextMsg.h"
 
 
 Fcore::Fcore()
@@ -70,16 +72,27 @@ void Fcore::operator()(zmq::context_t* zmqContext)
 
         // work the query by the query type
         switch (msgPtrQ->getMsgType()) {
+            case FcConst::MSG_TYPE_GET_FRAGMENT_TEXT: {
+                fcore::GetFragmentTextMsg msg(msgPtrQ);
+                cpnReply = msg.msgWorker();
+                break;
+            }
+
+            case FcConst::MSG_TYPE_CREATE_TEST_MODULE: {
+                fcore::CreateTestModuleMsg msg(msgPtrQ);
+                cpnReply = msg.msgWorker();
+                break;
+            }
 
             case FcConst::MSG_TYPE_GET_FILE_TEXT: {
-                SendFileTextMsg sendFileTextMsg(msgPtrQ);
-                cpnReply = sendFileTextMsg.msgWorker();
+                SendFileTextMsg msg(msgPtrQ);
+                cpnReply = msg.msgWorker();
                 break;
             }
 
             default: {
-                SendErrorMsg sendErrorMsgmsg(msgPtrQ);
-                cpnReply = sendErrorMsgmsg.msgWorker();
+                SendErrorMsg msg(msgPtrQ);
+                cpnReply = msg.msgWorker();
                 break;
             }
         }
@@ -106,8 +119,6 @@ void Fcore::operator()(zmq::context_t* zmqContext)
 }
 
 
-
-
 void* Fcore::runMainThread()
 {
     std::cout << "logger initialization" << std::endl;
@@ -119,5 +130,5 @@ void* Fcore::runMainThread()
     zmq::context_t* zmqContext = new zmq::context_t(1);
     boost::thread fcoreMainThread(fcore, zmqContext);
 
-    return zmqContext->operator void *(); // return zmqContext->ptr;
+    return zmqContext->operator void* (); // return zmqContext->ptr;
 }
