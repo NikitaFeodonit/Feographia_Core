@@ -107,8 +107,8 @@ extern "C" jbyteArray Java_ru_feographia_fcore_message_FcoreMsg_fcoreSendMessage
 
     kj::Array<capnp::word> replyWords = Fcore::messageWorker(segmentsPtrQ, segmentSizeQ);
     kj::ArrayPtr<kj::byte> replyBytes = replyWords.asBytes();
-    jbyte* segmentsPtrsR = (jbyte*) replyBytes.begin(); // TODO: c++ cast
-    jsize segmentsSizesR = (jsize) replyBytes.size(); // TODO: c++ cast
+    jbyte* segmentsPtrsR = static_cast <jbyte*>(static_cast <void*>(replyBytes.begin()));
+    jsize segmentsSizesR = static_cast <jsize>(replyBytes.size());
 
     if (!segmentsPtrsR || !segmentsSizesR) {
         return nullptr;

@@ -54,7 +54,7 @@ kj::Array<capnp::word> Fcore::messageWorker(
         long long int segmentsSizesQ)
 {
     // to the capnp query
-    capnp::word* queryWords = (capnp::word*) segmentsPtrsQ; // TODO: c++ cast
+    capnp::word* queryWords = static_cast <capnp::word*>(segmentsPtrsQ);
     size_t querySize = segmentsSizesQ / sizeof(capnp::word);
 
     kj::DestructorOnlyArrayDisposer adp;
