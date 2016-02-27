@@ -24,8 +24,6 @@
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 
-#include <zmq.hpp>
-
 #include <capnp/serialize.h>
 
 #include "fcore/capnproto/FcMsg.capnp.h"
@@ -43,101 +41,11 @@ Fcore::Fcore()
 }
 
 
-void Fcore::operator()(zmq::context_t* zmqContext)
-{
-    // Prepare zmq socket
-    zmq::socket_t socket (*zmqContext, ZMQ_PAIR);
-    socket.bind(FcConst::INPROC_FCORE->cStr());
-
-    while (true) {
-        // receive the query
-        zmq::message_t zmqQuery;
-        socket.recv(&zmqQuery);
-
-        // zmq query to the capnp query
-        capnp::word* queryWords = (capnp::word*) zmqQuery.data(); // TODO: c++ cast
-        size_t querySize = zmqQuery.size() / sizeof(capnp::word);
-
-        kj::DestructorOnlyArrayDisposer adp;
-        kj::Array<capnp::word> msgArray(queryWords, querySize, adp);
-        kj::ArrayPtr<capnp::word> arrayPtrQ = msgArray.asPtr();
-        capnp::FlatArrayMessageReader cpnQuery(arrayPtrQ);
-
-
-        // read the capnproto struct
-        FcMsg::Message::Reader msgQ = cpnQuery.getRoot<FcMsg::Message>();
-        auto msgPtrQ = boost::make_shared<FcMsg::Message::Reader>(msgQ);
-
-        // the new capnproto reply
-        boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
-
-        // work the query by the query type
-        switch (msgPtrQ->getMsgType()) {
-            case FcConst::MSG_TYPE_GET_FRAGMENT_TEXT: {
-                fcore::GetFragmentTextMsg msg(msgPtrQ);
-                cpnReply = msg.msgWorker();
-                break;
-            }
-
-            case FcConst::MSG_TYPE_CREATE_TEST_MODULE: {
-                fcore::CreateTestModuleMsg msg(msgPtrQ);
-                cpnReply = msg.msgWorker();
-                break;
-            }
-
-            case FcConst::MSG_TYPE_GET_FILE_TEXT: {
-                SendFileTextMsg msg(msgPtrQ);
-                cpnReply = msg.msgWorker();
-                break;
-            }
-
-            case FcConst::MSG_TYPE_GET_TEST_TEXT: {
-                GetTestTextMsg msg(msgPtrQ);
-                cpnReply = msg.msgWorker();
-                break;
-            }
-
-            default: {
-                SendErrorMsg msg(msgPtrQ);
-                cpnReply = msg.msgWorker();
-                break;
-            }
-        }
-
-
-        // send the reply
-        if (nullptr != cpnReply) {
-            // capnproto message to the zmq message
-            kj::Array<capnp::word> replyWords = messageToFlatArray(*cpnReply);
-            kj::ArrayPtr<kj::byte> replyBytes = replyWords.asBytes();
-
-            void* replyBytesPtr = (void*) replyBytes.begin();
-            size_t replySize = replyBytes.size();
-
-
-            // send the zmq reply
-            zmq::message_t zmqReply(replySize);
-            memcpy ((void *) zmqReply.data (), replyBytesPtr, replySize);
-
-            bool result = socket.send (zmqReply);
-//            BOOST_LOG_SEV(FcoreLog::log, debug) << (result ? "Sended message" : "Send message failed");
-        }
-    }
-}
-
-
-void* Fcore::runMainThread()
+void Fcore::fcoreInit()
 {
     std::cout << "logger initialization" << std::endl;
     FcoreLog::initFcoreLog();
     BOOST_LOG_SEV(FcoreLog::log, info) << "logger is initialized";
-
-    Fcore fcore;
-    // Prepare zmq context
-    zmq::context_t* zmqContext = new zmq::context_t(1);
-    boost::thread fcoreMainThread(fcore, zmqContext);
-
-    return zmqContext->operator void* (); // return zmqContext->ptr;
 }
 
 

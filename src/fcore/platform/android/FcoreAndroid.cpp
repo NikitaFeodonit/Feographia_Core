@@ -87,6 +87,16 @@ int redirect_stdouts_to_logcat(const char *app_name)
 }
 
 
+extern "C" void Java_ru_feographia_fcore_Fcore_fcoreInit(JNIEnv* env, jobject thiz)
+{
+    redirect_stdouts_to_logcat("Fcore");
+
+    LOG("-Fg- FC: fcore init %s", "starting");
+    Fcore::fcoreInit();
+    LOG("-Fg- FC: fcore init %s", "finished");
+}
+
+
 extern "C" jbyteArray Java_ru_feographia_fcore_message_FcoreMsg_fcoreSendMessage(
         JNIEnv* env,
         jclass type,
@@ -107,16 +117,4 @@ extern "C" jbyteArray Java_ru_feographia_fcore_message_FcoreMsg_fcoreSendMessage
     jbyteArray segmentsReply = env->NewByteArray(segmentsSizesR);
     env->SetByteArrayRegion(segmentsReply, 0, segmentsSizesR, segmentsPtrsR);
     return segmentsReply;
-}
-
-
-extern "C" jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
-{
-    redirect_stdouts_to_logcat("Fcore");
-
-    LOG("-Fg- FC: main thread %s", "starting");
-    jlong zmqContextPointer = (jlong) Fcore::runMainThread();
-    LOG("-Fg- FC: main thread %s", "started");
-
-    return zmqContextPointer;
 }

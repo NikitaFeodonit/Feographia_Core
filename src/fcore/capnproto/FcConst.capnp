@@ -29,8 +29,6 @@ $Java.package("ru.feographia.capnproto");
 $Java.outerClassname("FcConst");
 
 
-const inprocFcore :Text = "inproc://fcore";
-
 const unknownId :UInt8 = 0;
 
 const msgTypeUnknown :Int32 = 0;

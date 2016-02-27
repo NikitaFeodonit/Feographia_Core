@@ -22,7 +22,6 @@
 #ifndef FCORE_HPP
 #define FCORE_HPP
 
-#include <zmq.hpp>
 #include <capnp/common.h>
 #include <kj/array.h>
 
@@ -34,16 +33,11 @@ class Fcore
 public:
     explicit Fcore();
 
-    static void* runMainThread();
-
-    void operator()(zmq::context_t* zmqContext);
+    static void fcoreInit();
 
     static kj::Array<capnp::word> messageWorker(
             void* segmentsPtrsQ,
             long long int segmentsSizesQ);
-
-private:
-
 };
 
 
