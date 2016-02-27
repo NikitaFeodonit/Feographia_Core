@@ -36,81 +36,82 @@
 #include "fcore/message/GetTestTextMsg.h"
 
 
-Fcore::Fcore()
+namespace fcore
 {
-}
+  Fcore::Fcore() {}
 
 
-void Fcore::fcoreInit()
-{
+  void Fcore::fcoreInit()
+  {
     std::cout << "logger initialization" << std::endl;
     FcoreLog::initFcoreLog();
     BOOST_LOG_SEV(FcoreLog::log, info) << "logger is initialized";
-}
+  }
 
 
-kj::Array<capnp::word> Fcore::messageWorker(
-        void* segmentsPtrsQ,
-        long long int segmentsSizesQ)
-{
+  kj::Array <capnp::word> Fcore::messageWorker(
+      void*         segmentsPtrsQ,
+      long long int segmentsSizesQ)
+  {
     // to the capnp query
     capnp::word* queryWords = static_cast <capnp::word*>(segmentsPtrsQ);
-    size_t querySize = segmentsSizesQ / sizeof(capnp::word);
+    size_t       querySize = segmentsSizesQ / sizeof(capnp::word);
 
     kj::DestructorOnlyArrayDisposer adp;
-    kj::Array<capnp::word> msgArray(queryWords, querySize, adp);
-    kj::ArrayPtr<capnp::word> arrayPtrQ = msgArray.asPtr();
-    capnp::FlatArrayMessageReader cpnQuery(arrayPtrQ);
+    kj::Array <capnp::word>         msgArray(queryWords, querySize, adp);
+    kj::ArrayPtr <capnp::word>      arrayPtrQ = msgArray.asPtr();
+    capnp::FlatArrayMessageReader   cpnQuery(arrayPtrQ);
 
 
     // read the capnproto struct
-    FcMsg::Message::Reader msgQ = cpnQuery.getRoot<FcMsg::Message>();
-    auto msgPtrQ = boost::make_shared<FcMsg::Message::Reader>(msgQ);
+    FcMsg::Message::Reader msgQ = cpnQuery.getRoot <FcMsg::Message>();
+    auto                   msgPtrQ = boost::make_shared <FcMsg::Message::Reader>(msgQ);
 
     // the new capnproto reply
-    boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
+    boost::shared_ptr <capnp::MallocMessageBuilder> cpnReply;
 
     // work the query by the query type
     switch (msgPtrQ->getMsgType()) {
         case FcConst::MSG_TYPE_GET_FRAGMENT_TEXT: {
-            fcore::GetFragmentTextMsg msg(msgPtrQ);
-            cpnReply = msg.msgWorker();
-            break;
+          GetFragmentTextMsg msg(msgPtrQ);
+          cpnReply = msg.msgWorker();
+          break;
         }
 
         case FcConst::MSG_TYPE_CREATE_TEST_MODULE: {
-            fcore::CreateTestModuleMsg msg(msgPtrQ);
-            cpnReply = msg.msgWorker();
-            break;
+          CreateTestModuleMsg msg(msgPtrQ);
+          cpnReply = msg.msgWorker();
+          break;
         }
 
         case FcConst::MSG_TYPE_GET_FILE_TEXT: {
-            SendFileTextMsg msg(msgPtrQ);
-            cpnReply = msg.msgWorker();
-            break;
+          SendFileTextMsg msg(msgPtrQ);
+          cpnReply = msg.msgWorker();
+          break;
         }
 
         case FcConst::MSG_TYPE_GET_TEST_TEXT: {
-            GetTestTextMsg msg(msgPtrQ);
-            cpnReply = msg.msgWorker();
-            break;
+          GetTestTextMsg msg(msgPtrQ);
+          cpnReply = msg.msgWorker();
+          break;
         }
 
         default: {
-            SendErrorMsg msg(msgPtrQ);
-            cpnReply = msg.msgWorker();
-            break;
+          SendErrorMsg msg(msgPtrQ);
+          cpnReply = msg.msgWorker();
+          break;
         }
-    }
+    }  // switch
 
 
     // send the reply
     if (nullptr != cpnReply) {
-        // capnproto message to the serialization
-        kj::Array<capnp::word> replyWords = messageToFlatArray(*cpnReply);
-        return kj::mv(replyWords);
+      // capnproto message to the serialization
+      kj::Array <capnp::word> replyWords = messageToFlatArray(*cpnReply);
+      return (kj::mv(replyWords));
     }
 
-    kj::Array<capnp::word> empty = kj::heapArray<capnp::word>(0);
-    return kj::mv(empty);
-}
+    kj::Array <capnp::word> empty = kj::heapArray <capnp::word>(0);
+    return (kj::mv(empty));
+  }  // Fcore::messageWorker
+}  // namespace fcore

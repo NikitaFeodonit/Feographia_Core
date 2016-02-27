@@ -27,16 +27,20 @@
 #include "SendErrorMsg.h"
 
 
-void SendErrorMsg::dataWorker(
-        boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-        boost::shared_ptr<FcMsg::Message::Builder> msgPtrR)
+namespace fcore
 {
+  void SendErrorMsg::dataWorker(
+      boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+      boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR)
+  {
     // make the reply data
-    std::string errorMsg = "ERROR: unknown message type: " + boost::lexical_cast<std::string>(mMsgPtrQ->getMsgType());
+    std::string errorMsg = "ERROR: unknown message type: " + boost::lexical_cast <std::string>(
+        mMsgPtrQ->getMsgType());
     BOOST_LOG_SEV(FcoreLog::log, debug) << errorMsg;
 
     // set the reply type and data
     msgPtrR->setMsgType(FcConst::MSG_TYPE_ERROR);
     msgPtrR->setErrorFlag(true);
     msgPtrR->setMsgText(errorMsg);
-}
+  }  // SendErrorMsg::dataWorker
+}  // namespace fcore

@@ -25,15 +25,21 @@
 #include "fcore/message/FcoreMsg.h"
 
 
-class GetTestTextMsg : public FcoreMsg
+namespace fcore
 {
-public:
-    explicit GetTestTextMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
+  class GetTestTextMsg
+    : public FcoreMsg
+  {
+  public:
+    explicit GetTestTextMsg(boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ)
+      : FcoreMsg(msgPtrQ)
+    {}
 
-protected:
+  protected:
     void dataWorker(
-            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
-};
+        boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+        boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR);
+  };
+}  // namespace fcore
 
-#endif // FCORE_GETTESTTEXTMSG_H
+#endif  // FCORE_GETTESTTEXTMSG_H

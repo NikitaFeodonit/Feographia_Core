@@ -25,16 +25,20 @@
 #include "fcore/message/FcoreMsg.h"
 
 
-class SendErrorMsg : public FcoreMsg
+namespace fcore
 {
-public:
-    explicit SendErrorMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
+  class SendErrorMsg
+    : public FcoreMsg
+  {
+  public:
+    explicit SendErrorMsg(boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ)
+      : FcoreMsg(msgPtrQ)                                                                         {}
 
-protected:
+  protected:
     void dataWorker(
-            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
+        boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+        boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR);
+  };
+}  // namespace fcore
 
-};
-
-#endif // FCORE_SENDERRORMSG_H
+#endif  // FCORE_SENDERRORMSG_H

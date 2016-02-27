@@ -27,38 +27,41 @@
 #include "fcore/FcoreLog.h"
 
 
-boost::shared_ptr<char[]> getFileText(std::string filePath)
+namespace fcore
 {
-    auto file = boost::make_shared<std::ifstream>(filePath, std::ios::in | std::ios::binary | std::ios::ate);
+  boost::shared_ptr <char[]> getFileText(std::string filePath)
+  {
+    auto file = boost::make_shared <std::ifstream>(filePath,
+        std::ios::in | std::ios::binary | std::ios::ate);
 
     if (file->is_open()) {
-        std::streampos fileSize = file->tellg();
-        size_t bufferSize = fileSize;
+      std::streampos fileSize = file->tellg();
+      size_t         bufferSize = fileSize;
 
-        auto buffer = boost::make_shared<char[]>(++bufferSize);
+      auto buffer = boost::make_shared <char[]>(++bufferSize);
 
-        file->seekg(0, std::ios::beg);
-        file->read(buffer.get(), fileSize);
-        buffer[fileSize] = 0; // terminate C-string by 0
+      file->seekg(0, std::ios::beg);
+      file->read(buffer.get(), fileSize);
+      buffer[fileSize] = 0;   // terminate C-string by 0
 
-        return buffer;
+      return (buffer);
     }
 
     else {
-        std::string errMsg = "Unable to open file, file path: " + filePath;
-        BOOST_LOG_SEV(FcoreLog::log, debug) << errMsg;
-        throw FcoreErrEx() << FcoreErrInfo(errMsg);
+      std::string errMsg = "Unable to open file, file path: " + filePath;
+      BOOST_LOG_SEV(FcoreLog::log, debug) << errMsg;
+      throw FcoreErrEx() << FcoreErrInfo(errMsg);
     }
-}
+  }  // getFileText
 
 
-void SendFileTextMsg::dataWorker(
-        boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-        boost::shared_ptr<FcMsg::Message::Builder> msgPtrR)
-{
+  void SendFileTextMsg::dataWorker(
+      boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+      boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR)
+  {
     // get the query data
-    FcMsg::GetFileTextQ::Reader dataQ = dataPtrQ->getAs<FcMsg::GetFileTextQ>();
-    std::string path = dataQ.getFilePath().cStr();
+    FcMsg::GetFileTextQ::Reader dataQ = dataPtrQ->getAs <FcMsg::GetFileTextQ>();
+    std::string                 path = dataQ.getFilePath().cStr();
     BOOST_LOG_SEV(FcoreLog::log, debug) << "filePath: " << path;
 
     // make the reply data
@@ -68,10 +71,12 @@ void SendFileTextMsg::dataWorker(
 
     // set the reply data
     if (nullptr != fileText) {
-        capnp::AnyPointer::Builder dataPtrR = msgPtrR->initDataPointer();
-        FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetFileTextR>();
-        dataR.setFileText(fileText.get());
-    } else {
-        throw FcoreErrEx() << FcoreErrInfo("getFileText() error, nullptr == fileText");
+      capnp::AnyPointer::Builder   dataPtrR = msgPtrR->initDataPointer();
+      FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs <FcMsg::GetFileTextR>();
+      dataR.setFileText(fileText.get());
     }
-}
+    else {
+      throw FcoreErrEx() << FcoreErrInfo("getFileText() error, nullptr == fileText");
+    }
+  }  // SendFileTextMsg::dataWorker
+}  // namespace fcore

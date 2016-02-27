@@ -28,17 +28,20 @@
 #include "fcore/FcoreLog.h"
 
 
-class Fcore
+namespace fcore
 {
-public:
+  class Fcore
+  {
+  public:
     explicit Fcore();
 
     static void fcoreInit();
 
-    static kj::Array<capnp::word> messageWorker(
-            void* segmentsPtrsQ,
-            long long int segmentsSizesQ);
-};
+    static kj::Array <capnp::word> messageWorker(
+        void*         segmentsPtrsQ,
+        long long int segmentsSizesQ);
+  };
+}  // namespace fcore
 
 
-#endif // FCORE_FCORE_H
+#endif  // FCORE_FCORE_H

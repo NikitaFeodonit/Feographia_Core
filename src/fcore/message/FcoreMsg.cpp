@@ -28,37 +28,42 @@
 #include "fcore/message/FcoreMsg.h"
 
 
-FcoreMsg::FcoreMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ)
+namespace fcore
 {
+  FcoreMsg::FcoreMsg(boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ)
+  {
     mMsgPtrQ = msgPtrQ;
-}
+  }
 
 
-boost::shared_ptr<capnp::MallocMessageBuilder> FcoreMsg::msgWorker()
-{
+  boost::shared_ptr <capnp::MallocMessageBuilder> FcoreMsg::msgWorker()
+  {
     // the new capnproto reply
-    auto cpnPtrR = boost::make_shared<capnp::MallocMessageBuilder>();
-    auto msgPtrR = boost::make_shared<FcMsg::Message::Builder>(cpnPtrR->initRoot<FcMsg::Message>());
+    auto cpnPtrR = boost::make_shared <capnp::MallocMessageBuilder>();
+    auto msgPtrR =
+        boost::make_shared <FcMsg::Message::Builder>(cpnPtrR->initRoot <FcMsg::Message>());
 
     // set the reply type
     msgPtrR->setMsgType(mMsgPtrQ->getMsgType());
 
     try {
-        // get the query data
-        auto dataPtrQ = boost::make_shared<capnp::AnyPointer::Reader>(mMsgPtrQ->getDataPointer());
-        // make and set the reply data
-        dataWorker(dataPtrQ, msgPtrR);
+      // get the query data
+      auto dataPtrQ = boost::make_shared <capnp::AnyPointer::Reader>(mMsgPtrQ->getDataPointer());
+      // make and set the reply data
+      dataWorker(dataPtrQ, msgPtrR);
+    }
+    catch (boost::exception& ex) {
+      // set the error reply data
+      std::string errInfo;
+      if (const std::string* errInfoPtr = boost::get_error_info <FcoreErrInfo>(ex)) {
+        errInfo += *errInfoPtr;
+      }
 
-    } catch (boost::exception& ex) {
-        // set the error reply data
-        std::string errInfo;
-        if (const std::string* errInfoPtr = boost::get_error_info <FcoreErrInfo>(ex)) {
-            errInfo += *errInfoPtr;
-        }
-
-        msgPtrR->setErrorFlag(true);
-        msgPtrR->setMsgText(errInfo);
+      msgPtrR->setErrorFlag(true);
+      msgPtrR->setMsgText(errInfo);
     }
 
-    return cpnPtrR;
-}
+
+    return (cpnPtrR);
+  }  // FcoreMsg::msgWorker
+}  // namespace fcore

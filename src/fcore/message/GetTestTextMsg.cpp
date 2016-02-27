@@ -25,51 +25,53 @@
 #include "fcore/library/text/util/SharedPointers.h"
 
 
-std::string* bigStr = nullptr;
-
-std::string* getBigStr()
+namespace fcore
 {
-    std::string* src = new std::string("abcdefghi "); // 10 chars
+  std::string* bigStr = nullptr;
+
+  std::string* getBigStr()
+  {
+    std::string* src = new std::string("abcdefghi ");  // 10 chars
     std::string* dst = new std::string();
 
-    for (int i = 0; i < 100000; ++i) { // 10 * 100 000 = 1 000 000 chars
-        *dst += *src;
+    for (int i = 0; i < 100000; ++i) {
+      // 10 * 100 000 = 1 000 000 chars
+      *dst += *src;
     }
 
-    return dst;
-}
+    return (dst);
+  }  // getBigStr
 
 
-void Deleter(std::string* ptr)
-{}
+  void Deleter(std::string* ptr) {}
 
 
-fcore::SharedString getBigTestText(const std::string& testPath)
-{
+  SharedString getBigTestText(const std::string& testPath)
+  {
     if (nullptr == bigStr) {
-        bigStr = getBigStr();
-        BOOST_LOG_SEV(FcoreLog::log, debug) << "big str created.";
+      bigStr = getBigStr();
+      BOOST_LOG_SEV(FcoreLog::log, debug) << "big str created.";
     }
-    std::shared_ptr<std::string> str(bigStr, Deleter);
+    std::shared_ptr <std::string> str(bigStr, Deleter);
 
-    return str;
-}
-
-
-fcore::SharedString getTestText(const std::string& testPath)
-{
-    auto str = fcore::makeSharedString("test text");
-    return str;
-}
+    return (str);
+  }  // getBigTestText
 
 
-void GetTestTextMsg::dataWorker(
-        boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-        boost::shared_ptr<FcMsg::Message::Builder> msgPtrR)
-{
+  SharedString getTestText(const std::string& testPath)
+  {
+    auto str = makeSharedString("test text");
+    return (str);
+  }
+
+
+  void GetTestTextMsg::dataWorker(
+      boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+      boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR)
+  {
     // get the query data
-    FcMsg::GetTestTextQ::Reader dataQ = dataPtrQ->getAs<FcMsg::GetTestTextQ>();
-    std::string testPath = dataQ.getTestPath().cStr();
+    FcMsg::GetTestTextQ::Reader dataQ = dataPtrQ->getAs <FcMsg::GetTestTextQ>();
+    std::string                 testPath = dataQ.getTestPath().cStr();
 //    BOOST_LOG_SEV(FcoreLog::log, debug) << "testPath: " << testPath;
 
     // make the reply data
@@ -84,10 +86,12 @@ void GetTestTextMsg::dataWorker(
 
     // set the reply data
     if (nullptr != testText) {
-        capnp::AnyPointer::Builder dataPtrR = msgPtrR->initDataPointer();
-        FcMsg::GetTestTextR::Builder dataR = dataPtrR.initAs<FcMsg::GetTestTextR>();
-        dataR.setTestText(testText->c_str());
-    } else {
-        throw FcoreErrEx() << FcoreErrInfo("getTestText() error, nullptr == testText");
+      capnp::AnyPointer::Builder   dataPtrR = msgPtrR->initDataPointer();
+      FcMsg::GetTestTextR::Builder dataR = dataPtrR.initAs <FcMsg::GetTestTextR>();
+      dataR.setTestText(testText->c_str());
     }
-}
+    else {
+      throw FcoreErrEx() << FcoreErrInfo("getTestText() error, nullptr == testText");
+    }
+  }  // GetTestTextMsg::dataWorker
+}  // namespace fcore

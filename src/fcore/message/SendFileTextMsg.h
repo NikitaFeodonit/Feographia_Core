@@ -25,15 +25,21 @@
 #include "fcore/message/FcoreMsg.h"
 
 
-class SendFileTextMsg : public FcoreMsg
+namespace fcore
 {
-public:
-    explicit SendFileTextMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
+  class SendFileTextMsg
+    : public FcoreMsg
+  {
+  public:
+    explicit SendFileTextMsg(boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ)
+      : FcoreMsg(msgPtrQ)
+    {}
 
-protected:
+  protected:
     void dataWorker(
-            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
-};
+        boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+        boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR);
+  };
+}  // namespace fcore
 
-#endif // FCORE_SENDFILETEXTMSG_H
+#endif  // FCORE_SENDFILETEXTMSG_H

@@ -16,6 +16,8 @@
 #include "fcore/FcoreLog.h"
 
 
+namespace fcore
+{
 namespace boostlog = boost::log;
 namespace logsrc = boost::log::sources;
 namespace logexpr = boost::log::expressions;
@@ -23,37 +25,34 @@ namespace logsinks = boost::log::sinks;
 namespace logkeys = boost::log::keywords;
 namespace logattrs = boost::log::attributes;
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level)
-BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
-
-
-FcoreLog FcoreLog::log;
+  BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level) BOOST_LOG_ATTRIBUTE_KEYWORD(
+      timestamp,
+      "TimeStamp",
+      boost::posix_time::ptime) FcoreLog FcoreLog::log;
 
 
 // The operator puts a human-friendly representation of the severity level to the stream
-std::ostream& operator<< (std::ostream& strm, severity_level level)
-{
-    static const char* strings[] =
-    {
-        "TRACE",
-        "DEBUG",
-        "INFO",
-        "WARNING",
-        "ERROR",
-        "FATAL"
+  std::ostream& operator<< (
+      std::ostream&  strm,
+      severity_level level)
+  {
+    static const char* strings[] = {
+      "TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL"
     };
 
-    if (static_cast< std::size_t >(level) < sizeof(strings) / sizeof(*strings))
-        strm << strings[level];
-    else
-        strm << static_cast< int >(level);
+    if (static_cast <std::size_t>(level) < sizeof(strings) / sizeof(*strings)) {
+      strm << strings[level];
+    }
+    else {
+      strm << static_cast <int>(level);
+    }
 
-    return strm;
-}
+    return (strm);
+  }  // <<
 
 
-void FcoreLog::initFcoreLog()
-{
+  void FcoreLog::initFcoreLog()
+  {
     boostlog::add_common_attributes();
 
     // Construct the sink
@@ -65,22 +64,19 @@ void FcoreLog::initFcoreLog()
     // async, bound,  1000: THR 32, VSS 569.424K, RSS 39.928K
     // async, bound,   200: THR 32, VSS 569.208K, RSS 39.504K
     //  sync              : THR 31, VSS 568.064K, RSS 39.400K
-    typedef logsinks::asynchronous_sink< logsinks::text_ostream_backend,
-            logsinks::bounded_fifo_queue< 1000,logsinks::block_on_overflow > > text_sink;
+    typedef logsinks::asynchronous_sink <logsinks::text_ostream_backend,
+        logsinks::bounded_fifo_queue <1000, logsinks::block_on_overflow> > text_sink;
 
-    boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
+    boost::shared_ptr <text_sink> sink = boost::make_shared <text_sink>();
 
     // We have to provide an empty deleter to avoid destroying the global stream object
-    boost::shared_ptr< std::ostream > stream(&std::cout, boost::null_deleter());
+    boost::shared_ptr <std::ostream> stream(&std::cout, boost::null_deleter());
     sink->locked_backend()->add_stream(stream);
 
-                         sink->set_formatter(
-                             logexpr::format("FC: %1% [%2%] %3%")
-                             % timestamp
-                             % severity
-                             % logexpr::smessage
-                             );
+    sink->set_formatter(logexpr::format(
+        "FC: %1% [%2%] %3%") % timestamp % severity % logexpr::smessage);
 
     // Register the sink in the logging core
     boostlog::core::get()->add_sink(sink);
-}
+  }  // FcoreLog::initFcoreLog
+}  // namespace fcore

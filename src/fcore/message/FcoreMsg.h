@@ -31,24 +31,27 @@
 #include "fcore/capnproto/FcConst.capnp.h"
 
 
-typedef boost::error_info<struct errInfoMsg_, std::string> FcoreErrInfo;
-struct FcoreErrEx: virtual boost::exception { };
+typedef boost::error_info <struct errInfoMsg_, std::string> FcoreErrInfo;
+struct FcoreErrEx
+  : virtual boost::exception {};
 
 
-class FcoreMsg
+namespace fcore
 {
-public:
-    explicit FcoreMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ);
+  class FcoreMsg
+  {
+  public:
+    explicit FcoreMsg(boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ);
 
-    boost::shared_ptr<capnp::MallocMessageBuilder> msgWorker();
+    boost::shared_ptr <capnp::MallocMessageBuilder> msgWorker();
 
-protected:
-    // TODO: using namespace (?)
+  protected:
     virtual void dataWorker(
-            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR) = 0;
+        boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
+        boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR) = 0;
 
-    boost::shared_ptr<FcMsg::Message::Reader> mMsgPtrQ;
-};
+    boost::shared_ptr <FcMsg::Message::Reader> mMsgPtrQ;
+  };
+}  // namespace fcore
 
-#endif // FCORE_FCOREMSG_H
+#endif  // FCORE_FCOREMSG_H
