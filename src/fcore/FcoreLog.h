@@ -1,5 +1,5 @@
-#ifndef FCORELOG_HPP
-#define FCORELOG_HPP
+#ifndef FCORE_FCORELOG_H
+#define FCORE_FCORELOG_H
 
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
@@ -26,4 +26,4 @@ public:
 };
 
 
-#endif // FCORELOG_HPP
+#endif // FCORE_FCORELOG_H

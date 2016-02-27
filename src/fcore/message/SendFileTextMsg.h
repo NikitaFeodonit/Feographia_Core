@@ -19,22 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SENDERRORMSG_HPP
-#define SENDERRORMSG_HPP
+#ifndef FCORE_SENDFILETEXTMSG_H
+#define FCORE_SENDFILETEXTMSG_H
 
-#include "fcore/message/FcoreMsg.hpp"
+#include "fcore/message/FcoreMsg.h"
 
 
-class SendErrorMsg : public FcoreMsg
+class SendFileTextMsg : public FcoreMsg
 {
 public:
-    explicit SendErrorMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
+    explicit SendFileTextMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
 
 protected:
     void dataWorker(
             boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
             boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
-
 };
 
-#endif // SENDERRORMSG_HPP
+#endif // FCORE_SENDFILETEXTMSG_H

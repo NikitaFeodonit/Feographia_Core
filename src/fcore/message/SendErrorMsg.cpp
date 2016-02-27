@@ -23,8 +23,8 @@
 
 #include <iostream>
 
-#include "fcore/FcoreLog.hpp"
-#include "fcore/message/SendErrorMsg.hpp"
+#include "fcore/FcoreLog.h"
+#include "SendErrorMsg.h"
 
 
 void SendErrorMsg::dataWorker(

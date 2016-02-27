@@ -13,7 +13,7 @@
 #include <boost/smart_ptr/make_shared_object.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include "fcore/FcoreLog.hpp"
+#include "fcore/FcoreLog.h"
 
 
 namespace boostlog = boost::log;

@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCORE_FRAGMENT_HPP
-#define FCORE_FRAGMENT_HPP
+#ifndef FCORE_FRAGMENT_H
+#define FCORE_FRAGMENT_H
 
 #include <map>
 #include <memory>
@@ -50,4 +50,4 @@ namespace fcore
   }
 }  // namespace fcore
 
-#endif  // FCORE_FRAGMENT_HPP
+#endif  // FCORE_FRAGMENT_H

@@ -22,7 +22,7 @@
 #include "fcore/library/text/fragments/sql/SqlTable.h"
 
 #include <sstream>
-#include "fcore/FcoreLog.hpp"
+#include "fcore/FcoreLog.h"
 
 
 namespace fcore

@@ -21,7 +21,7 @@
 
 #include "fcore/message/GetTestTextMsg.h"
 
-#include "fcore/FcoreLog.hpp"
+#include "fcore/FcoreLog.h"
 #include "fcore/library/text/util/SharedPointers.h"
 
 

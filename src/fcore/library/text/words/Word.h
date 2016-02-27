@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCORE_WORD_HPP
-#define FCORE_WORD_HPP
+#ifndef FCORE_WORD_H
+#define FCORE_WORD_H
 
 #include <string>
 #include <sstream>
@@ -111,4 +111,4 @@ namespace fcore
   }
 }  // namespace fcore
 
-#endif  // FCORE_WORD_HPP
+#endif  // FCORE_WORD_H

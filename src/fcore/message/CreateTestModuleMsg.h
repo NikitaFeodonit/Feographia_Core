@@ -22,7 +22,7 @@
 #ifndef FCORE_CREATETESTMODULEMSG_H
 #define FCORE_CREATETESTMODULEMSG_H
 
-#include "fcore/message/FcoreMsg.hpp"
+#include "fcore/message/FcoreMsg.h"
 
 
 namespace fcore

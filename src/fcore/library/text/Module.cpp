@@ -21,7 +21,7 @@
 
 #include "fcore/library/text/Module.h"
 
-#include "fcore/FcoreLog.hpp"
+#include "fcore/FcoreLog.h"
 
 
 namespace fcore

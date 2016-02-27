@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCORE_TEXTDEFS_HPP
-#define FCORE_TEXTDEFS_HPP
+#ifndef FCORE_TEXTDEFS_H
+#define FCORE_TEXTDEFS_H
 
 #include <string>
 #include <cstdint>
@@ -154,4 +154,4 @@ namespace fcore
 }  // namespace fcore
 
 
-#endif  // FCORE_TEXTDEFS_HPP
+#endif  // FCORE_TEXTDEFS_H

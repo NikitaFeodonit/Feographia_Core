@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fcore/Fcore.hpp"
+#include "fcore/Fcore.h"
 
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
@@ -29,8 +29,8 @@
 #include "fcore/capnproto/FcMsg.capnp.h"
 #include "fcore/capnproto/FcConst.capnp.h"
 
-#include "fcore/message/SendErrorMsg.hpp"
-#include "fcore/message/SendFileTextMsg.hpp"
+#include "fcore/message/SendErrorMsg.h"
+#include "fcore/message/SendFileTextMsg.h"
 #include "fcore/message/CreateTestModuleMsg.h"
 #include "fcore/message/GetFragmentTextMsg.h"
 #include "fcore/message/GetTestTextMsg.h"

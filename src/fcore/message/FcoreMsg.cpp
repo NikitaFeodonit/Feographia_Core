@@ -25,7 +25,7 @@
 
 #include <capnp/message.h>
 
-#include "fcore/message/FcoreMsg.hpp"
+#include "fcore/message/FcoreMsg.h"
 
 
 FcoreMsg::FcoreMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ)

@@ -19,10 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GETTESTTEXTMSG_HPP
-#define GETTESTTEXTMSG_HPP
+#ifndef FCORE_GETTESTTEXTMSG_H
+#define FCORE_GETTESTTEXTMSG_H
 
-#include "fcore/message/FcoreMsg.hpp"
+#include "fcore/message/FcoreMsg.h"
 
 
 class GetTestTextMsg : public FcoreMsg
@@ -36,4 +36,4 @@ protected:
             boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
 };
 
-#endif // GETTESTTEXTMSG_HPP
+#endif // FCORE_GETTESTTEXTMSG_H

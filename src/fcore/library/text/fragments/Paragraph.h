@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCORE_PARAGRAPH_HPP
-#define FCORE_PARAGRAPH_HPP
+#ifndef FCORE_PARAGRAPH_H
+#define FCORE_PARAGRAPH_H
 
 #include "fcore/library/text/fragments/Fragment.h"
 #include "fcore/library/text/util/TextId.h"
@@ -47,4 +47,4 @@ namespace fcore
   }
 }  // namespace fcore
 
-#endif  // FCORE_PARAGRAPH_HPP
+#endif  // FCORE_PARAGRAPH_H

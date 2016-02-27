@@ -22,7 +22,7 @@
 #ifndef FCORE_GETFRAGMENTTEXT_H
 #define FCORE_GETFRAGMENTTEXT_H
 
-#include "fcore/message/FcoreMsg.hpp"
+#include "fcore/message/FcoreMsg.h"
 
 
 namespace fcore

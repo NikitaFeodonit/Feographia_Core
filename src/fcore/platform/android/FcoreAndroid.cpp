@@ -29,7 +29,7 @@
 #include <jni.h>
 #define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "Fcore", fmt, ##__VA_ARGS__)
 
-#include "fcore/Fcore.hpp"
+#include "fcore/Fcore.h"
 
 
 // Redirect the "stdout" and "stderr" to android logcat.

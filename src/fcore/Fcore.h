@@ -19,36 +19,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCOREMSG_HPP
-#define FCOREMSG_HPP
+#ifndef FCORE_FCORE_H
+#define FCORE_FCORE_H
 
-#include <boost/smart_ptr/make_shared.hpp>
-#include <boost/exception/all.hpp>
+#include <capnp/common.h>
+#include <kj/array.h>
 
-#include <capnp/message.h>
-
-#include "fcore/capnproto/FcMsg.capnp.h"
-#include "fcore/capnproto/FcConst.capnp.h"
+#include "fcore/FcoreLog.h"
 
 
-typedef boost::error_info<struct errInfoMsg_, std::string> FcoreErrInfo;
-struct FcoreErrEx: virtual boost::exception { };
-
-
-class FcoreMsg
+class Fcore
 {
 public:
-    explicit FcoreMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ);
+    explicit Fcore();
 
-    boost::shared_ptr<capnp::MallocMessageBuilder> msgWorker();
+    static void fcoreInit();
 
-protected:
-    // TODO: using namespace (?)
-    virtual void dataWorker(
-            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
-            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR) = 0;
-
-    boost::shared_ptr<FcMsg::Message::Reader> mMsgPtrQ;
+    static kj::Array<capnp::word> messageWorker(
+            void* segmentsPtrsQ,
+            long long int segmentsSizesQ);
 };
 
-#endif // FCOREMSG_HPP
+
+#endif // FCORE_FCORE_H
