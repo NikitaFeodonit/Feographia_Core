@@ -38,5 +38,6 @@ const msgTypeGetFragmentText :Int32 = 1;
 const msgTypeError :Int32 = 1000;
 
 # for test
-const msgTypeCreateTestModule :Int32 = 998;
-const msgTypeGetFileText :Int32 = 999;
+const msgTypeCreateTestModule :Int32 = 997;
+const msgTypeGetFileText :Int32 = 998;
+const msgTypeGetTestText :Int32 = 999;

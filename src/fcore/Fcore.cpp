@@ -35,6 +35,7 @@
 #include "fcore/message/SendFileTextMsg.hpp"
 #include "fcore/message/CreateTestModuleMsg.h"
 #include "fcore/message/GetFragmentTextMsg.h"
+#include "fcore/message/GetTestTextMsg.h"
 
 
 Fcore::Fcore()
@@ -54,7 +55,7 @@ void Fcore::operator()(zmq::context_t* zmqContext)
         socket.recv(&zmqQuery);
 
         // zmq query to the capnp query
-        capnp::word* queryWords = (capnp::word*) zmqQuery.data();
+        capnp::word* queryWords = (capnp::word*) zmqQuery.data(); // TODO: c++ cast
         size_t querySize = zmqQuery.size() / sizeof(capnp::word);
 
         kj::DestructorOnlyArrayDisposer adp;
@@ -90,6 +91,12 @@ void Fcore::operator()(zmq::context_t* zmqContext)
                 break;
             }
 
+            case FcConst::MSG_TYPE_GET_TEST_TEXT: {
+                GetTestTextMsg msg(msgPtrQ);
+                cpnReply = msg.msgWorker();
+                break;
+            }
+
             default: {
                 SendErrorMsg msg(msgPtrQ);
                 cpnReply = msg.msgWorker();
@@ -113,7 +120,7 @@ void Fcore::operator()(zmq::context_t* zmqContext)
             memcpy ((void *) zmqReply.data (), replyBytesPtr, replySize);
 
             bool result = socket.send (zmqReply);
-            BOOST_LOG_SEV(FcoreLog::log, debug) << (result ? "Sended message" : "Send message failed");
+//            BOOST_LOG_SEV(FcoreLog::log, debug) << (result ? "Sended message" : "Send message failed");
         }
     }
 }
@@ -131,4 +138,71 @@ void* Fcore::runMainThread()
     boost::thread fcoreMainThread(fcore, zmqContext);
 
     return zmqContext->operator void* (); // return zmqContext->ptr;
+}
+
+
+kj::Array<capnp::word> Fcore::messageWorker(
+        void* segmentsPtrsQ,
+        long long int segmentsSizesQ)
+{
+    // to the capnp query
+    capnp::word* queryWords = (capnp::word*) segmentsPtrsQ; // TODO: c++ cast
+    size_t querySize = segmentsSizesQ / sizeof(capnp::word);
+
+    kj::DestructorOnlyArrayDisposer adp;
+    kj::Array<capnp::word> msgArray(queryWords, querySize, adp);
+    kj::ArrayPtr<capnp::word> arrayPtrQ = msgArray.asPtr();
+    capnp::FlatArrayMessageReader cpnQuery(arrayPtrQ);
+
+
+    // read the capnproto struct
+    FcMsg::Message::Reader msgQ = cpnQuery.getRoot<FcMsg::Message>();
+    auto msgPtrQ = boost::make_shared<FcMsg::Message::Reader>(msgQ);
+
+    // the new capnproto reply
+    boost::shared_ptr<capnp::MallocMessageBuilder> cpnReply;
+
+    // work the query by the query type
+    switch (msgPtrQ->getMsgType()) {
+        case FcConst::MSG_TYPE_GET_FRAGMENT_TEXT: {
+            fcore::GetFragmentTextMsg msg(msgPtrQ);
+            cpnReply = msg.msgWorker();
+            break;
+        }
+
+        case FcConst::MSG_TYPE_CREATE_TEST_MODULE: {
+            fcore::CreateTestModuleMsg msg(msgPtrQ);
+            cpnReply = msg.msgWorker();
+            break;
+        }
+
+        case FcConst::MSG_TYPE_GET_FILE_TEXT: {
+            SendFileTextMsg msg(msgPtrQ);
+            cpnReply = msg.msgWorker();
+            break;
+        }
+
+        case FcConst::MSG_TYPE_GET_TEST_TEXT: {
+            GetTestTextMsg msg(msgPtrQ);
+            cpnReply = msg.msgWorker();
+            break;
+        }
+
+        default: {
+            SendErrorMsg msg(msgPtrQ);
+            cpnReply = msg.msgWorker();
+            break;
+        }
+    }
+
+
+    // send the reply
+    if (nullptr != cpnReply) {
+        // capnproto message to the serialization
+        kj::Array<capnp::word> replyWords = messageToFlatArray(*cpnReply);
+        return kj::mv(replyWords);
+    }
+
+    kj::Array<capnp::word> empty = kj::heapArray<capnp::word>(0);
+    return kj::mv(empty);
 }

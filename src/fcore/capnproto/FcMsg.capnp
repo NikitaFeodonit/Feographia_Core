@@ -80,3 +80,13 @@ struct GetFileTextR
 {
   fileText @0 :Text;
 }
+
+
+struct GetTestTextQ
+{
+  testPath @0 :Text;
+}
+struct GetTestTextR
+{
+  testText @0 :Text;
+}

@@ -87,8 +87,30 @@ int redirect_stdouts_to_logcat(const char *app_name)
 }
 
 
-extern "C"
-jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
+extern "C" jbyteArray Java_ru_feographia_fcore_message_FcoreMsg_fcoreSendMessage(
+        JNIEnv* env,
+        jclass type,
+        jobject segmentsQuery)
+{
+    void* segmentsPtrQ = env->GetDirectBufferAddress(segmentsQuery);
+    long long int segmentSizeQ = env->GetDirectBufferCapacity(segmentsQuery);
+
+    kj::Array<capnp::word> replyWords = Fcore::messageWorker(segmentsPtrQ, segmentSizeQ);
+    kj::ArrayPtr<kj::byte> replyBytes = replyWords.asBytes();
+    jbyte* segmentsPtrsR = (jbyte*) replyBytes.begin(); // TODO: c++ cast
+    jsize segmentsSizesR = (jsize) replyBytes.size(); // TODO: c++ cast
+
+    if (!segmentsPtrsR || !segmentsSizesR) {
+        return nullptr;
+    }
+
+    jbyteArray segmentsReply = env->NewByteArray(segmentsSizesR);
+    env->SetByteArrayRegion(segmentsReply, 0, segmentsSizesR, segmentsPtrsR);
+    return segmentsReply;
+}
+
+
+extern "C" jlong Java_ru_feographia_fcore_Fcore_fcoreRunMainThread(JNIEnv* env, jobject thiz)
 {
     redirect_stdouts_to_logcat("Fcore");
 

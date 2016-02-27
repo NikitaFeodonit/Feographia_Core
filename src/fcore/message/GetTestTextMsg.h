@@ -19,32 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FCORE_HPP
-#define FCORE_HPP
+#ifndef GETTESTTEXTMSG_HPP
+#define GETTESTTEXTMSG_HPP
 
-#include <zmq.hpp>
-#include <capnp/common.h>
-#include <kj/array.h>
-
-#include "fcore/FcoreLog.hpp"
+#include "fcore/message/FcoreMsg.hpp"
 
 
-class Fcore
+class GetTestTextMsg : public FcoreMsg
 {
 public:
-    explicit Fcore();
+    explicit GetTestTextMsg(boost::shared_ptr<FcMsg::Message::Reader> msgPtrQ) : FcoreMsg(msgPtrQ) {};
 
-    static void* runMainThread();
-
-    void operator()(zmq::context_t* zmqContext);
-
-    static kj::Array<capnp::word> messageWorker(
-            void* segmentsPtrsQ,
-            long long int segmentsSizesQ);
-
-private:
-
+protected:
+    void dataWorker(
+            boost::shared_ptr<capnp::AnyPointer::Reader> dataPtrQ,
+            boost::shared_ptr<FcMsg::Message::Builder> msgPtrR);
 };
 
-
-#endif // FCORE_HPP
+#endif // GETTESTTEXTMSG_HPP
