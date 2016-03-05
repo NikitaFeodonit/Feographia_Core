@@ -1,7 +1,7 @@
 /*
  * Project:  Feographia
  * Purpose:  Mobile application to work with the biblical text
- * Authors:  NikitaFeodonit, nfeodonit@yandex.com
+ * Author:   NikitaFeodonit, nfeodonit@yandex.com
  * ****************************************************************************
  * Copyright (C) 2015-2016 NikitaFeodonit
  *
@@ -48,7 +48,7 @@ namespace fcore
     SQLite::Database db(mpText->getDbPath()->c_str(), SQLITE_OPEN_READWRITE);
 
     std::stringstream sql;
-    int               cnt = 0;
+    int cnt = 0;
 
     sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
     sql << TextId::getWordId(52, 4, 22, 1) << ", NULL, 'Потому', NULL)";
