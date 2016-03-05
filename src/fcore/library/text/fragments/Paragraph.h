@@ -24,7 +24,7 @@
 
 #include "fcore/library/text/fragments/Fragment.h"
 #include "fcore/library/text/util/TextId.h"
-#include "fcore/library/text/util/SharedPointers.h"
+#include "fcore/utils/SharedPointers.h"
 
 
 namespace fcore

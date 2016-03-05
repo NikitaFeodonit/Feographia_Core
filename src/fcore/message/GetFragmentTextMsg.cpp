@@ -22,7 +22,7 @@
 #include "fcore/message/GetFragmentTextMsg.h"
 
 #include "fcore/FcoreLog.h"
-#include "fcore/library/text/util/SharedPointers.h"
+#include "fcore/utils/SharedPointers.h"
 #include "fcore/library/text/util/TextId.h"
 #include "fcore/library/text/sql/SqlModule.h"
 

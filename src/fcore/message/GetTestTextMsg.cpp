@@ -22,7 +22,7 @@
 #include "fcore/message/GetTestTextMsg.h"
 
 #include "fcore/FcoreLog.h"
-#include "fcore/library/text/util/SharedPointers.h"
+#include "fcore/utils/SharedPointers.h"
 
 
 namespace fcore
