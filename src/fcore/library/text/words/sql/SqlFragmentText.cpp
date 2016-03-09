@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "fcore/FcoreLog.h"
 #include "fcore/library/text/words/sql/SqlFragmentText.h"
 
 #include "fcore/library/text/util/SqlTextConstants.h"
@@ -26,59 +27,87 @@
 
 namespace fcore
 {
-  SqlFragmentText::SqlFragmentText(SharedString pDbPath)
-    : SqlTable{pDbPath} {}
+  SqlFragmentText::SqlFragmentText()
+  { }
+
+
+  void SqlFragmentText::setDatabase(const SharedSQLiteDatabase pDatabase)
+  {
+    SqlTable::setDatabase(pDatabase);
+
+    if (pDatabase) {
+      createFragmentTextQueryStatement();
+    }
+  }
 
 
   const SharedString SqlFragmentText::getCreateTableSql() const
   {
-    std::stringstream sql;
-    sql << "CREATE TABLE IF NOT EXISTS " << SqlTextConstants::TABLE_TEXT << " (";
-    sql << SqlTextConstants::FIELD_ID << " INTEGER PRIMARY KEY, ";
-    sql << SqlTextConstants::FIELD_PRESIGNS << " TEXT, ";
-    sql << SqlTextConstants::FIELD_WORD << " TEXT, ";
-    sql << SqlTextConstants::FIELD_POSTSIGNS << " TEXT)";
-    return (makeSharedString(sql.str()));
+    SharedString sql = makeSharedString();
+    *sql += "CREATE TABLE IF NOT EXISTS ";
+    *sql += SqlTextConstants::TABLE_TEXT;
+    *sql += " (";
+    *sql += SqlTextConstants::FIELD_ID;
+    *sql += " INTEGER PRIMARY KEY, ";
+    *sql += SqlTextConstants::FIELD_PRESIGNS;
+    *sql += " TEXT, ";
+    *sql += SqlTextConstants::FIELD_WORD;
+    *sql += " TEXT, ";
+    *sql += SqlTextConstants::FIELD_POSTSIGNS;
+    *sql += " TEXT)";
+
+    return (sql);
   }  // SqlFragmentText::getCreateTableSql
 
 
-  const SharedWordMap SqlFragmentText::getFragmentText(
-      WordIdInt fromWordId,
-      WordIdInt toWordId) const
+  const SharedSQLiteStatement SqlFragmentText::createFragmentTextQueryStatement()
   {
+    std::string sql;
+    sql += "SELECT ";
+    sql += SqlTextConstants::FIELD_ID;
+    sql += ", ";
+    sql += SqlTextConstants::FIELD_PRESIGNS;
+    sql += ", ";
+    sql += SqlTextConstants::FIELD_WORD;
+    sql += ", ";
+    sql += SqlTextConstants::FIELD_POSTSIGNS;
+    sql += " FROM ";
+    sql += SqlTextConstants::TABLE_TEXT;
+    sql += " WHERE ";
+    sql += SqlTextConstants::FIELD_ID;
+    sql += " >= ?1 AND "; // TODO: named constants of indexes
+    sql += SqlTextConstants::FIELD_ID;
+    sql += " < ?2  ORDER BY ";
+    sql += SqlTextConstants::FIELD_ID;
+    sql += " ASC";
+
+    return (mpFragmentTextQueryStatement = makeSharedSQLiteStatement(*getDatabase(), sql));
+  }
+
+
+  const SharedWordMap SqlFragmentText::getFragmentText(
+      const WordIdInt& fromWordId,
+      const WordIdInt& toWordId) const
+  {
+    SharedSQLiteStatement pQuery = getFragmentTextQueryStatement();
+    pQuery->reset();
+    pQuery->clearBindings();
+
+    pQuery->bind(1, static_cast<sqlite3_int64> (fromWordId));
+    pQuery->bind(2, static_cast<sqlite3_int64> (toWordId));
+
     SharedWordMap wordMap = makeSharedWordMap();
 
-    std::stringstream sql;
-    sql << "SELECT ";
-    sql << SqlTextConstants::FIELD_ID << ", ";
-    sql << SqlTextConstants::FIELD_PRESIGNS << ", ";
-    sql << SqlTextConstants::FIELD_WORD << ", ";
-    sql << SqlTextConstants::FIELD_POSTSIGNS;
-    sql << " FROM " << SqlTextConstants::TABLE_TEXT << " WHERE ";
-    sql << SqlTextConstants::FIELD_ID << " >= " << fromWordId << " AND ";
-    sql << SqlTextConstants::FIELD_ID << " < " << toWordId;
-    sql << " ORDER BY " << SqlTextConstants::FIELD_ID << " ASC";
+    while (pQuery->executeStep()) {
+      WordIdInt id = static_cast <WordIdInt>(pQuery->getColumn(0).getInt());
 
-    SQLite::Database db {
-      *getDbPath(), SQLITE_OPEN_READONLY
-    };
-    SQLite::Statement query {
-      db, sql.str()
-    };
+      // TODO: named constants of columns
+      // we must make copy of getText()
+      SharedString preSigns = makeSharedString(pQuery->getColumn(1).getText(""));
+      SharedString wordText = makeSharedString(pQuery->getColumn(2).getText(""));
+      SharedString postSigns = makeSharedString(pQuery->getColumn(3).getText(""));
 
-    while (query.executeStep()) {
-      WordIdInt id = static_cast <WordIdInt>(query.getColumn(0).getInt());
-
-      std::string preSigns(query.getColumn(1).getText(""));
-      SharedString sharedPreSigns = makeSharedString(preSigns);
-
-      std::string wordText(query.getColumn(2).getText(""));
-      SharedString sharedWordText = makeSharedString(wordText);
-
-      std::string postSigns(query.getColumn(3).getText(""));
-      SharedString sharedPostSigns = makeSharedString(postSigns);
-
-      SharedWord word = makeSharedWord(id, sharedPreSigns, sharedWordText, sharedPostSigns);
+      SharedWord word = makeSharedWord(id, preSigns, wordText, postSigns);
       wordMap->insert(PairIdWord(id, word));
     }
 

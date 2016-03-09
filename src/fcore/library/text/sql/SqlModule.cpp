@@ -22,16 +22,102 @@
 #include "fcore/library/text/sql/SqlModule.h"
 
 #include "fcore/library/text/util/SqlTextConstants.h"
-#include "fcore/library/text/util/PathConstants.h"
+#include "fcore/FcoreLog.h"
 
 
 namespace fcore
 {
-  SqlModule::SqlModule()
+  SqlModule::SqlModule(SharedString pModulePath)
+      : mpModulePath{pModulePath}
+      , mReadwriteDatabase{false}
+      , mpText{makeSharedSqlFragmentText()}
+  { }
+
+
+  SharedSQLiteDatabase SqlModule::createDatabase()
   {
-    std::stringstream dbPath;
-    dbPath << PathConstants::MODULES_PATH << "/" << "testmodule";
-    mpText = makeSharedSqlFragmentText(makeSharedString(dbPath.str()));
+    mReadwriteDatabase = true;
+    mpDatabase =
+        makeSharedSQLiteDatabase(*mpModulePath, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    return (mpDatabase);
+  }
+
+
+  const SharedSQLiteDatabase SqlModule::openDatabase(bool readwrite)
+  {
+    mReadwriteDatabase = readwrite;
+    mpDatabase = makeSharedSQLiteDatabase(*mpModulePath,
+        readwrite ? SQLITE_OPEN_READWRITE : SQLITE_OPEN_READONLY);
+    setTablesDatabase();
+    return (mpDatabase);
+  }
+
+
+  void SqlModule::createTables() const
+  {
+    try {
+      std::string sql;
+      sql += "DROP TABLE IF EXISTS ";
+      sql += SqlTextConstants::TABLE_TEXT;
+
+//      BOOST_LOG_SEV(FcoreLog::log, debug) << "Drop module table: " << sql;
+      getDatabase()->exec(sql);
+
+//      sql = *mpText->getCreateTableSql();
+//      BOOST_LOG_SEV(FcoreLog::log, debug) << "Create module table: " << sql;
+//      getDatabase()->exec(sql);
+      getDatabase()->exec(*mpText->getCreateTableSql());
+
+      setTablesDatabase();
+
+    } catch (std::exception& e) {
+      std::string errMsg = "SQLite exception: " + std::string(e.what());
+      BOOST_LOG_SEV(FcoreLog::log, debug) << errMsg;
+//        throw FcoreErrEx() << FcoreErrInfo(errMsg);
+    }
+  }
+
+
+  void SqlModule::setTablesDatabase() const
+  {
+    mpText->setDatabase(getDatabase());
+  }
+
+
+  const SharedSQLiteStatement SqlModule::createWordInsertStatement()
+  {
+    std::string sql;
+    sql += "INSERT INTO ";
+    sql += SqlTextConstants::TABLE_TEXT;
+    sql += " VALUES (?1, ?2, ?3, ?4)"; // TODO: named constants of indexes
+
+    return (mpWordInsertStatement = makeSharedSQLiteStatement(*getDatabase(), sql));
+  }
+
+
+  const int SqlModule::insertWord(
+      const WordIdInt wordId,
+      const SharedString preSigns,
+      const SharedString wordText,
+      const SharedString postSigns) const
+  {
+    SharedSQLiteStatement pInsert = getWordInsertStatement();
+    pInsert->reset();
+    pInsert->clearBindings();
+
+    pInsert->bind(1, static_cast<sqlite3_int64> (wordId));
+
+    if (preSigns) {
+      pInsert->bind(2, *preSigns);
+    }
+    if (wordText) {
+      pInsert->bind(3, *wordText);
+    }
+    if (postSigns) {
+      pInsert->bind(4, *postSigns);
+    }
+
+    return (pInsert->exec());
   }
 
 
@@ -43,480 +129,140 @@ namespace fcore
 
   void SqlModule::createTestSqlModule()
   {
-    mpText->createTable();
+    // TODO: for multiply inserts see https://www.sqlite.org/faq.html#q19
 
-    SQLite::Database db(mpText->getDbPath()->c_str(), SQLITE_OPEN_READWRITE);
+    SQLite::Transaction transaction(*createDatabase());
+    createTables();
+    createWordInsertStatement();
 
-    std::stringstream sql;
     int cnt = 0;
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 1) << ", NULL, 'Потому', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 2) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 3) << ", NULL, 'вменилось', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 4) << ", NULL, 'ему', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 5) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 22, 6) << ", NULL, 'праведность', '.')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 1), nullptr, makeSharedString("Потому"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 2), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 3), nullptr, makeSharedString("вменилось"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 4), nullptr, makeSharedString("ему"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 5), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 22, 6), nullptr, makeSharedString("праведность"), makeSharedString("."));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 1) << ", NULL, 'А', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 2) << ", NULL, 'впрочем', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 3) << ", NULL, 'не', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 4) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 5) << ", NULL, 'отношении', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 6) << ", NULL, 'к', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 7) << ", NULL, 'нему', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 8) << ", NULL, 'одному', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 9) << ", NULL, 'написано', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 10) << ", NULL, 'что', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 11) << ", NULL, 'вменилось', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 23, 12) << ", NULL, 'ему', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 1), nullptr, makeSharedString("А"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 2), nullptr, makeSharedString("впрочем"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 3), nullptr, makeSharedString("не"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 4), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 5), nullptr, makeSharedString("отношении"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 6), nullptr, makeSharedString("к"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 7), nullptr, makeSharedString("нему"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 8), nullptr, makeSharedString("одному"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 9), nullptr, makeSharedString("написано"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 10), nullptr, makeSharedString("что"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 11), nullptr, makeSharedString("вменилось"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 23, 12), nullptr, makeSharedString("ему"), makeSharedString(","));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 1) << ", NULL, 'но', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 2) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 3) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 4) << ", NULL, 'отношении', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 5) << ", NULL, 'к', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 6) << ", NULL, 'нам', ';')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 7) << ", NULL, 'вменится', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 8) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 9) << ", NULL, 'нам', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 10) << ", NULL, 'верующим', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 11) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 12) << ", NULL, 'Того', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 13) << ", NULL, 'Кто', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 14) << ", NULL, 'воскресил', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 15) << ", NULL, 'из', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 16) << ", NULL, 'мертвых', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 17) << ", NULL, 'Иисуса', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 18) << ", NULL, 'Христа', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 19) << ", NULL, 'Господа', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 24, 20) << ", NULL, 'нашего', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 1), nullptr, makeSharedString("но"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 2), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 3), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 4), nullptr, makeSharedString("отношении"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 5), nullptr, makeSharedString("к"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 6), nullptr, makeSharedString("нам"), makeSharedString(";"));
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 7), nullptr, makeSharedString("вменится"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 8), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 9), nullptr, makeSharedString("нам"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 10), nullptr, makeSharedString("верующим"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 11), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 12), nullptr, makeSharedString("Того"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 13), nullptr, makeSharedString("Кто"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 14), nullptr, makeSharedString("воскресил"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 15), nullptr, makeSharedString("из"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 16), nullptr, makeSharedString("мертвых"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 17), nullptr, makeSharedString("Иисуса"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 18), nullptr, makeSharedString("Христа"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 19), nullptr, makeSharedString("Господа"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 24, 20), nullptr, makeSharedString("нашего"), makeSharedString(","));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 1) << ", NULL, 'Который', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 2) << ", NULL, 'предан', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 3) << ", NULL, 'за', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 4) << ", NULL, 'грехи', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 5) << ", NULL, 'наши', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 6) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 7) << ", NULL, 'воскрес', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 8) << ", NULL, 'для', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 9) << ", NULL, 'оправдания', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 4, 25, 10) << ", NULL, 'нашего', '.')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 1), nullptr, makeSharedString("Который"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 2), nullptr, makeSharedString("предан"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 3), nullptr, makeSharedString("за"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 4), nullptr, makeSharedString("грехи"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 5), nullptr, makeSharedString("наши"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 6), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 7), nullptr, makeSharedString("воскрес"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 8), nullptr, makeSharedString("для"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 9), nullptr, makeSharedString("оправдания"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 4, 25, 10), nullptr, makeSharedString("нашего"), makeSharedString("."));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 1) << ", NULL, 'Итак', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 2) << ", NULL, 'оправдавшись', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 3) << ", NULL, 'верою', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 4) << ", NULL, 'мы', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 5) << ", NULL, 'имеем', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 6) << ", NULL, 'мир', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 7) << ", NULL, 'с', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 8) << ", NULL, 'Богом', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 9) << ", NULL, 'через', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 10) << ", NULL, 'Господа', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 11) << ", NULL, 'нашего', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 12) << ", NULL, 'Иисуса', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 1, 13) << ", NULL, 'Христа', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 1), nullptr, makeSharedString("Итак"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 2), nullptr, makeSharedString("оправдавшись"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 3), nullptr, makeSharedString("верою"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 4), nullptr, makeSharedString("мы"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 5), nullptr, makeSharedString("имеем"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 6), nullptr, makeSharedString("мир"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 7), nullptr, makeSharedString("с"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 8), nullptr, makeSharedString("Богом"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 9), nullptr, makeSharedString("через"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 10), nullptr, makeSharedString("Господа"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 11), nullptr, makeSharedString("нашего"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 12), nullptr, makeSharedString("Иисуса"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 1, 13), nullptr, makeSharedString("Христа"), makeSharedString(","));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 1) << ", NULL, 'через', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 2) << ", NULL, 'Которого', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 3) << ", NULL, 'верою', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 4) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 5) << ", NULL, 'получили', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 6) << ", NULL, 'мы', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 7) << ", NULL, 'доступ', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 8) << ", NULL, 'к', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 9) << ", NULL, 'той', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 10) << ", NULL, 'благодати', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 11) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 12) << ", NULL, 'которой', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 13) << ", NULL, 'стоим', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 14) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 15) << ", NULL, 'хвалимся', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 16) << ", NULL, 'надеждою', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 17) << ", NULL, 'славы', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 2, 18) << ", NULL, 'Божией', '.')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 1), nullptr, makeSharedString("через"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 2), nullptr, makeSharedString("Которого"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 3), nullptr, makeSharedString("верою"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 4), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 5), nullptr, makeSharedString("получили"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 6), nullptr, makeSharedString("мы"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 7), nullptr, makeSharedString("доступ"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 8), nullptr, makeSharedString("к"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 9), nullptr, makeSharedString("той"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 10), nullptr, makeSharedString("благодати"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 11), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 12), nullptr, makeSharedString("которой"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 13), nullptr, makeSharedString("стоим"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 14), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 15), nullptr, makeSharedString("хвалимся"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 16), nullptr, makeSharedString("надеждою"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 17), nullptr, makeSharedString("славы"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 2, 18), nullptr, makeSharedString("Божией"), makeSharedString("."));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 1) << ", NULL, 'И', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 2) << ", NULL, 'не', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 3) << ", NULL, 'сим', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 4) << ", NULL, 'только', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 5) << ", NULL, 'но', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 6) << ", NULL, 'хвалимся', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 7) << ", NULL, 'и', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 8) << ", NULL, 'скорбями', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 9) << ", NULL, 'зная', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 10) << ", NULL, 'что', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 11) << ", NULL, 'от', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 12) << ", NULL, 'скорби', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 13) << ", NULL, 'происходит', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 3, 14) << ", NULL, 'терпение', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 1), nullptr, makeSharedString("И"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 2), nullptr, makeSharedString("не"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 3), nullptr, makeSharedString("сим"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 4), nullptr, makeSharedString("только"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 5), nullptr, makeSharedString("но"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 6), nullptr, makeSharedString("хвалимся"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 7), nullptr, makeSharedString("и"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 8), nullptr, makeSharedString("скорбями"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 9), nullptr, makeSharedString("зная"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 10), nullptr, makeSharedString("что"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 11), nullptr, makeSharedString("от"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 12), nullptr, makeSharedString("скорби"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 13), nullptr, makeSharedString("происходит"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 3, 14), nullptr, makeSharedString("терпение"), makeSharedString(","));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 1) << ", NULL, 'от', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 2) << ", NULL, 'терпения', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 3) << ", NULL, 'опытность', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 4) << ", NULL, 'от', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 5) << ", NULL, 'опытности', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 4, 6) << ", NULL, 'надежда', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 1), nullptr, makeSharedString("от"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 2), nullptr, makeSharedString("терпения"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 3), nullptr, makeSharedString("опытность"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 4), nullptr, makeSharedString("от"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 5), nullptr, makeSharedString("опытности"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 4, 6), nullptr, makeSharedString("надежда"), makeSharedString(","));
 
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 1) << ", NULL, 'а', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 2) << ", NULL, 'надежда', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 3) << ", NULL, 'не', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 4) << ", NULL, 'постыжает', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 5) << ", NULL, 'потому', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 6) << ", NULL, 'что', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 7) << ", NULL, 'любовь', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 8) << ", NULL, 'Божия', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 9) << ", NULL, 'излилась', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 10) << ", NULL, 'в', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 11) << ", NULL, 'сердца', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 12) << ", NULL, 'наши', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 13) << ", NULL, 'Духом', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 14) << ", NULL, 'Святым', ',')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 15) << ", NULL, 'данным', NULL)";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-    sql << "INSERT INTO " << SqlTextConstants::TABLE_TEXT << " VALUES (";
-    sql << TextId::getWordId(52, 5, 5, 16) << ", NULL, 'нам', '.')";
-    cnt = db.exec(sql.str());
-    sql.str(std::string());
-  }  // SqlModule::createTestSqlModule
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 1), nullptr, makeSharedString("а"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 2), nullptr, makeSharedString("надежда"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 3), nullptr, makeSharedString("не"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 4), nullptr, makeSharedString("постыжает"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 5), nullptr, makeSharedString("потому"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 6), nullptr, makeSharedString("что"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 7), nullptr, makeSharedString("любовь"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 8), nullptr, makeSharedString("Божия"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 9), nullptr, makeSharedString("излилась"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 10), nullptr, makeSharedString("в"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 11), nullptr, makeSharedString("сердца"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 12), nullptr, makeSharedString("наши"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 13), nullptr, makeSharedString("Духом"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 14), nullptr, makeSharedString("Святым"), makeSharedString(","));
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 15), nullptr, makeSharedString("данным"), nullptr);
+    cnt += insertWord(TextId::getWordId(52, 5, 5, 16), nullptr, makeSharedString("нам"), makeSharedString("."));
+
+    transaction.commit();
+
+    BOOST_LOG_SEV(FcoreLog::log, debug) << "createTestSqlModule(), inserted words: " << cnt;
+  }
 }  // namespace fcore

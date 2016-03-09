@@ -22,6 +22,7 @@
 #ifndef FCORE_SQLTEXT_H
 #define FCORE_SQLTEXT_H
 
+#include "fcore/utils/SharedPointers.h"
 #include "fcore/library/text/words/FragmentText.h"
 #include "fcore/library/text/fragments/sql/SqlTable.h"
 
@@ -29,20 +30,43 @@
 namespace fcore
 {
   class SqlFragmentText
-    : public virtual FragmentText
-    , public virtual SqlTable
+      : public virtual FragmentText
+        , public virtual SqlTable
   {
   public:
-    SqlFragmentText() = delete;
-    explicit SqlFragmentText(SharedString pDbPath);
+    explicit SqlFragmentText();
 
     virtual const SharedWordMap getFragmentText(
-        WordIdInt fromWordId,
-        WordIdInt toWordId) const;
+        const WordIdInt& fromWordId,
+        const WordIdInt& toWordId) const;
 
   protected:
+  public:
+    virtual void setDatabase(const SharedSQLiteDatabase pDatabase) override;
     virtual const SharedString getCreateTableSql() const override;
+
+    virtual const SharedSQLiteStatement createFragmentTextQueryStatement();
+    const SharedSQLiteStatement getFragmentTextQueryStatement() const;
+
+  private:
+    SharedSQLiteStatement mpFragmentTextQueryStatement;
   };
+
+
+  inline const SharedSQLiteStatement SqlFragmentText::getFragmentTextQueryStatement() const
+  {
+    return (mpFragmentTextQueryStatement);
+  }
+
+
+  using SharedSqlFragmentText = std::shared_ptr <SqlFragmentText>;
+
+
+  template <typename ... Args>
+  SharedSqlFragmentText makeSharedSqlFragmentText(Args&& ... args)
+  {
+    return (std::make_shared <SqlFragmentText>(std::forward <Args>(args) ...));
+  }
 }  // namespace fcore
 
 #endif  // FCORE_SQLTEXT_H

@@ -19,18 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fcore/library/text/fragments/sql/SqlTable.h"
+#ifndef FCORE_FILEUTILS_H
+#define FCORE_FILEUTILS_H
 
-#include "fcore/FcoreLog.h"
 
+#include "fcore/utils/SharedPointers.h"
 
 namespace fcore
 {
-  SqlTable::SqlTable()
-      : mpDatabase{nullptr}
-  { }
+  class FileUtils
+  {
+  public:
+    static const char* FILE_SEPARATOR;
 
+    static SharedString getFileContents(const SharedString pFilePath);
+  };
+}
 
-  SqlTable::~SqlTable()
-  { }
-}  // namespace fcore
+#endif  // FCORE_FILEUTILS_H

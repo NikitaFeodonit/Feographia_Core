@@ -22,34 +22,65 @@
 #ifndef FCORE_SQLMODULE_H
 #define FCORE_SQLMODULE_H
 
+#include "fcore/utils/SharedPointers.h"
 #include "fcore/library/text/Module.h"
+#include "fcore/library/text/words/sql/SqlFragmentText.h"
 
 
 namespace fcore
 {
-  using SharedSqlFragmentText = std::shared_ptr <SqlFragmentText>;
-
-
-  // http://stackoverflow.com/a/13196986
-  template <typename ... Args>
-  SharedSqlFragmentText makeSharedSqlFragmentText(Args&& ... args)
-  {
-    return (std::make_shared <SqlFragmentText>(std::forward <Args>(args) ...));
-  }
-
-
   class SqlModule
-    : public Module
+      : public Module
   {
   public:
-    explicit SqlModule();
+    explicit SqlModule(SharedString pModulePath);
 
+    SharedSQLiteDatabase createDatabase();
+    const SharedSQLiteDatabase openDatabase(bool readwrite);
+    const SharedSQLiteDatabase getDatabase() const;
+    bool isReadwriteDatabase() const;
+
+    virtual void createTables() const;
+    virtual void setTablesDatabase() const;
+    virtual const int insertWord(
+        const WordIdInt wordId,
+        const SharedString preSigns,
+        const SharedString wordText,
+        const SharedString postSigns) const;
     virtual const SharedFragmentText getFragmentText() const;
     void createTestSqlModule();
 
+
+  protected:
+    virtual const SharedSQLiteStatement createWordInsertStatement();
+    virtual const SharedSQLiteStatement getWordInsertStatement() const;
+
   private:
+    SharedString mpModulePath;
+    bool mReadwriteDatabase;
     SharedSqlFragmentText mpText;
+
+    SharedSQLiteDatabase mpDatabase;
+    SharedSQLiteStatement mpWordInsertStatement;
   };
+
+
+  inline const SharedSQLiteDatabase SqlModule::getDatabase() const
+  {
+    return (mpDatabase);
+  }
+
+
+  inline bool SqlModule::isReadwriteDatabase() const
+  {
+    return (mReadwriteDatabase);
+  }
+
+
+  inline const SharedSQLiteStatement SqlModule::getWordInsertStatement() const
+  {
+    return (mpWordInsertStatement);
+  }
 }  // namespace fcore
 
 #endif  // FCORE_SQLMODULE_H

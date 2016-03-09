@@ -22,6 +22,7 @@
 #ifndef FCORE_SQLPARAGRAPH_H
 #define FCORE_SQLPARAGRAPH_H
 
+#include "fcore/utils/SharedPointers.h"
 #include "fcore/library/text/fragments/Paragraph.h"
 #include "fcore/library/text/fragments/sql/SqlFragment.h"
 

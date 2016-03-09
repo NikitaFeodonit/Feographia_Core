@@ -35,7 +35,8 @@ namespace fcore
   {
     SharedWordMap     pTextMap = getFragmentText()->getFragmentText(fromWordId, toWordId);
     int               currVerseId = 0;
-    std::stringstream htmlText;
+
+    SharedString htmlText = makeSharedString();
 
     for (auto it = pTextMap->begin(); it != pTextMap->end(); ++it) {
       // WordIdInt wordId = it->first;
@@ -50,29 +51,35 @@ namespace fcore
       if (pWordText) {
         if (!currVerseId || (1 == wordInVerseId)) {
           if (currVerseId) {
-            htmlText << "</div>\n";
+            *htmlText += "</div>\n";
           }
           currVerseId = verseId;
-          htmlText << "<div id=\"verse_" << verseId << "\" class=\"verse\">";
-          htmlText << "<b>" << chapterId << ":" << verseId << "</b>";
+          *htmlText += "<div id=\"verse_";
+          *htmlText += std::to_string(verseId);
+          *htmlText += "\" class=\"verse\">";
+          *htmlText += "<b>";
+          *htmlText += std::to_string(chapterId);
+          *htmlText += ":";
+          *htmlText += std::to_string(verseId);
+          *htmlText += "</b>";
         }
 
-        htmlText << " ";
+        *htmlText += " ";
         if (pPreSigns) {
-          htmlText << *pPreSigns;
+          *htmlText += *pPreSigns;
         }
-        htmlText << *pWordText;
+        *htmlText += *pWordText;
         if (pPostSigns) {
-          htmlText << *pPostSigns;
+          *htmlText += *pPostSigns;
         }
       }
     }
 
     if (currVerseId) {
-      htmlText << "</div>\n";
+      *htmlText += "</div>\n";
     }
 
-    BOOST_LOG_SEV(FcoreLog::log, debug) << "htmlText: " << htmlText.str();
-    return (makeSharedString(htmlText.str()));
+    BOOST_LOG_SEV(FcoreLog::log, debug) << "htmlText: " << *htmlText;
+    return (htmlText);
   }  // Module::getHtmlText
 }  // namespace fcore

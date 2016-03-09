@@ -19,18 +19,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fcore/library/text/fragments/sql/SqlTable.h"
+#include "fcore/utils/FileUtils.h"
 
-#include "fcore/FcoreLog.h"
+#include <fstream>
+#include <cerrno>
 
 
 namespace fcore
 {
-  SqlTable::SqlTable()
-      : mpDatabase{nullptr}
-  { }
+  const char* FileUtils::FILE_SEPARATOR = "/";
 
 
-  SqlTable::~SqlTable()
-  { }
-}  // namespace fcore
+  SharedString FileUtils::getFileContents(SharedString pFilePath)
+  {
+    std::ifstream in(*pFilePath, std::ios::in | std::ios::binary);
+    if (in) {
+      SharedString contents = makeSharedString();
+      in.seekg(0, std::ios::end);
+      contents->resize(in.tellg());
+      in.seekg(0, std::ios::beg);
+      in.read(&(*contents)[0], contents->size());
+      in.close();
+      return (contents);
+    }
+    throw (errno);
+  }
+}

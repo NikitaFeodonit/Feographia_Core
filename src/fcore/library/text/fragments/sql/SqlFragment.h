@@ -36,7 +36,7 @@ namespace fcore
     virtual ~SqlFragment();
 
   protected:
-    virtual const SharedString getCreateTableSql() const override;   // TODO: remove it
+//    virtual const SharedString getCreateTableSql() const override;   // TODO: remove it
   };
 }  // namespace fcore
 

@@ -23,7 +23,6 @@
 #define FCORE_SQLTABLE_H
 
 #include <string>
-#include "SQLiteCpp/SQLiteCpp.h"
 #include "fcore/utils/SharedPointers.h"
 
 
@@ -32,32 +31,29 @@ namespace fcore
   class SqlTable
   {
   public:
-    SqlTable() = delete;
-    explicit SqlTable(SharedString pDbPath);
+    explicit SqlTable();
     virtual ~SqlTable();
 
-    virtual const SharedString getDbPath() const;
-    virtual const SharedString getModuleId() const;
-    virtual void createTable() const;
+    virtual void setDatabase(const SharedSQLiteDatabase pDatabase);
+    const SharedSQLiteDatabase getDatabase() const;
 
   protected:
     virtual const SharedString getCreateTableSql() const = 0;
 
   private:
-    SharedString mpDbPath;
-    SharedString mpModuleId;
+    SharedSQLiteDatabase mpDatabase;
   };
 
 
-  inline const SharedString SqlTable::getDbPath() const
+  inline const SharedSQLiteDatabase SqlTable::getDatabase() const
   {
-    return (mpDbPath);
+    return (mpDatabase);
   }
 
 
-  inline const SharedString SqlTable::getModuleId() const
+  inline void SqlTable::setDatabase(const SharedSQLiteDatabase pDatabase)
   {
-    return (mpModuleId);
+    mpDatabase = pDatabase;
   }
 }  // namespace fcore
 

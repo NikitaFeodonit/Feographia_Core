@@ -71,6 +71,7 @@ namespace fcore
   {
     // get the query data
     FcMsg::GetTestTextQ::Reader dataQ = dataPtrQ->getAs <FcMsg::GetTestTextQ>();
+    // TODO: avoid make copy of cStr()
     std::string                 testPath = dataQ.getTestPath().cStr();
 //    BOOST_LOG_SEV(FcoreLog::log, debug) << "testPath: " << testPath;
 

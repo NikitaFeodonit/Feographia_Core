@@ -21,7 +21,6 @@
 
 #include "fcore/library/text/fragments/sql/SqlParagraph.h"
 
-#include <sstream>
 #include "fcore/library/text/util/SqlTextConstants.h"
 
 
@@ -32,10 +31,14 @@ namespace fcore
 
   const SharedString SqlParagraph::getCreateTableSql() const
   {
-    std::stringstream sql;
-    sql << "CREATE TABLE IF NOT EXISTS " << SqlTextConstants::TABLE_PARAGRAPHS << " (";
-    sql << SqlTextConstants::FIELD_ID << " INTEGER PRIMARY KEY, ";
-    sql << SqlTextConstants::FIELD_TITLE << " TEXT)";
-    return (makeSharedString(sql.str()));
+    SharedString sql = makeSharedString();
+    *sql += "CREATE TABLE IF NOT EXISTS ";
+    *sql += SqlTextConstants::TABLE_PARAGRAPHS;
+    *sql += " (";
+    *sql += SqlTextConstants::FIELD_ID;
+    *sql += " INTEGER PRIMARY KEY, ";
+    *sql += SqlTextConstants::FIELD_TITLE;
+    *sql += " TEXT)";
+    return (sql);
   }
 }  // namespace fcore

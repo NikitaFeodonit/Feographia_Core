@@ -22,6 +22,7 @@
 #ifndef FCORE_MODULE_H
 #define FCORE_MODULE_H
 
+#include "fcore/utils/SharedPointers.h"
 #include "fcore/library/text/words/FragmentText.h"
 #include "fcore/library/text/words/sql/SqlFragmentText.h"
 #include "fcore/library/text/fragments/Paragraph.h"
@@ -32,7 +33,6 @@ namespace fcore
   using SharedFragmentText = std::shared_ptr <FragmentText>;
 
 
-  // http://stackoverflow.com/a/13196986
   template <typename ... Args>
   SharedFragmentText makeSharedFragmentText(Args&& ... args)
   {

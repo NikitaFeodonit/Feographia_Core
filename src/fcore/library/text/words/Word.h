@@ -23,7 +23,6 @@
 #define FCORE_WORD_H
 
 #include <string>
-#include <sstream>
 
 #include "fcore/library/text/util/TextId.h"
 #include "fcore/utils/SharedPointers.h"
@@ -38,7 +37,7 @@ namespace fcore
     Word(const Word& other);
 
     explicit Word(
-        const WordIdInt    id,
+        const WordIdInt id,
         const SharedString preSigns = nullptr,
         const SharedString word = nullptr,
         const SharedString postSigns = nullptr);
@@ -56,11 +55,21 @@ namespace fcore
     const SharedString getPostSigns() const;
 
   private:
-    WordIdInt    mId;
+    WordIdInt mId;
     SharedString mPreSigns;
     SharedString mWordText;
     SharedString mPostSigns;
   };
+
+
+  using SharedWord = std::shared_ptr <Word>;
+
+
+  template <typename ... Args>
+  SharedWord makeSharedWord(Args&& ... args)
+  {
+    return (std::make_shared <Word>(std::forward <Args>(args) ...));
+  }
 
 
   inline const WordIdInt Word::getId() const

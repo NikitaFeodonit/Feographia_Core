@@ -21,21 +21,27 @@
 
 #include "fcore/message/CreateTestModuleMsg.h"
 
-#include "fcore/FcoreLog.h"
+#include "fcore/utils/PathConstants.h"
 #include "fcore/utils/SharedPointers.h"
+#include "fcore/utils/FileUtils.h"
+#include "fcore/FcoreLog.h"
 #include "fcore/library/text/sql/SqlModule.h"
 
 
 namespace fcore
 {
   CreateTestModuleMsg::CreateTestModuleMsg(const boost::shared_ptr <FcMsg::Message::Reader> msgPtrQ)
-    : FcoreMsg(msgPtrQ)
-  {}
+      : FcoreMsg(msgPtrQ)
+  { }
 
 
   SharedString createTestModule(const std::string& modulePath)
   {
-    SqlModule module;
+    SharedString dbPath = makeSharedString(PathConstants::MODULES_PATH);
+    *dbPath += FileUtils::FILE_SEPARATOR;
+    *dbPath += "testmodule";
+
+    SqlModule module(dbPath);
     module.createTestSqlModule();
     return (makeSharedString("Test sql module is created."));
   }
@@ -43,11 +49,11 @@ namespace fcore
 
   void CreateTestModuleMsg::dataWorker(
       boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
-      boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR)
+      boost::shared_ptr <FcMsg::Message::Builder> msgPtrR)
   {
     // get the query data
     FcMsg::CreateTestModuleQ::Reader dataQ = dataPtrQ->getAs <FcMsg::CreateTestModuleQ>();
-    std::string                      modulePath = dataQ.getModulePath().cStr();
+    std::string modulePath = dataQ.getModulePath().cStr(); // TODO: avoid make copy of cStr()
     BOOST_LOG_SEV(FcoreLog::log, debug) << "modulePath: " << modulePath;
 
     // make the reply data
@@ -57,11 +63,10 @@ namespace fcore
 
     // set the reply data
     if (reportText) {
-      capnp::AnyPointer::Builder        dataPtrR = msgPtrR->initDataPointer();
+      capnp::AnyPointer::Builder dataPtrR = msgPtrR->initDataPointer();
       FcMsg::CreateTestModuleR::Builder dataR = dataPtrR.initAs <FcMsg::CreateTestModuleR>();
       dataR.setReportText(*reportText);
-    }
-    else {
+    } else {
       throw FcoreErrEx() << FcoreErrInfo("createTestModule() error, nullptr == reportText");
     }
   }  // CreateTestModuleMsg::dataWorker

@@ -29,14 +29,14 @@
 
 namespace fcore
 {
-  boost::shared_ptr <char[]> getFileText(std::string filePath)
+  boost::shared_ptr <char[]> getFileText(std::string& filePath)
   {
     auto file = boost::make_shared <std::ifstream>(filePath,
         std::ios::in | std::ios::binary | std::ios::ate);
 
     if (file->is_open()) {
       std::streampos fileSize = file->tellg();
-      size_t         bufferSize = fileSize;
+      size_t bufferSize = fileSize;
 
       auto buffer = boost::make_shared <char[]>(++bufferSize);
 
@@ -57,11 +57,11 @@ namespace fcore
 
   void SendFileTextMsg::dataWorker(
       boost::shared_ptr <capnp::AnyPointer::Reader> dataPtrQ,
-      boost::shared_ptr <FcMsg::Message::Builder>   msgPtrR)
+      boost::shared_ptr <FcMsg::Message::Builder> msgPtrR)
   {
     // get the query data
     FcMsg::GetFileTextQ::Reader dataQ = dataPtrQ->getAs <FcMsg::GetFileTextQ>();
-    std::string                 path = dataQ.getFilePath().cStr();
+    std::string path = dataQ.getFilePath().cStr(); // TODO: avoid make copy of cStr()
     BOOST_LOG_SEV(FcoreLog::log, debug) << "filePath: " << path;
 
     // make the reply data
@@ -71,11 +71,10 @@ namespace fcore
 
     // set the reply data
     if (nullptr != fileText) {
-      capnp::AnyPointer::Builder   dataPtrR = msgPtrR->initDataPointer();
+      capnp::AnyPointer::Builder dataPtrR = msgPtrR->initDataPointer();
       FcMsg::GetFileTextR::Builder dataR = dataPtrR.initAs <FcMsg::GetFileTextR>();
       dataR.setFileText(fileText.get());
-    }
-    else {
+    } else {
       throw FcoreErrEx() << FcoreErrInfo("getFileText() error, nullptr == fileText");
     }
   }  // SendFileTextMsg::dataWorker

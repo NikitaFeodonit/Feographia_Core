@@ -24,10 +24,12 @@
 
 #include <memory>
 #include <string>
+#include "SQLiteCpp/SQLiteCpp.h"
 
 
 namespace fcore
 {
+  // SharedString
   using SharedString = std::shared_ptr <std::string>;
 
 
@@ -36,6 +38,28 @@ namespace fcore
   SharedString makeSharedString(Args&& ... args)
   {
     return (std::make_shared <std::string>(std::forward <Args>(args) ...));
+  }
+
+
+  // SharedSQLiteDatabase
+  using SharedSQLiteDatabase = std::shared_ptr <SQLite::Database>;
+
+
+  template <typename ... Args>
+  SharedSQLiteDatabase makeSharedSQLiteDatabase(Args&& ... args)
+  {
+    return (std::make_shared <SQLite::Database>(std::forward <Args>(args) ...));
+  }
+
+
+  // SharedSQLiteStatement
+  using SharedSQLiteStatement = std::shared_ptr <SQLite::Statement>;
+
+
+  template <typename ... Args>
+  SharedSQLiteStatement makeSharedSQLiteStatement(Args&& ... args)
+  {
+    return (std::make_shared <SQLite::Statement>(std::forward <Args>(args) ...));
   }
 }  // namespace fcore
 

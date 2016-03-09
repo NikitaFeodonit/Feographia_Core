@@ -21,8 +21,10 @@
 
 #include "fcore/message/GetFragmentTextMsg.h"
 
-#include "fcore/FcoreLog.h"
+#include "fcore/utils/PathConstants.h"
 #include "fcore/utils/SharedPointers.h"
+#include "fcore/utils/FileUtils.h"
+#include "fcore/FcoreLog.h"
 #include "fcore/library/text/util/TextId.h"
 #include "fcore/library/text/sql/SqlModule.h"
 
@@ -38,7 +40,12 @@ namespace fcore
       const WordIdInt fromWordId,
       const WordIdInt toWordId)
   {
-    SqlModule module;
+    SharedString pModulePath = makeSharedString(PathConstants::MODULES_PATH);
+    *pModulePath += FileUtils::FILE_SEPARATOR;
+    *pModulePath += "testmodule";
+
+    SqlModule module{pModulePath};
+    module.openDatabase(false);
     return (module.getHtmlText(fromWordId, toWordId));
   }
 
@@ -51,6 +58,7 @@ namespace fcore
     FcMsg::GetFragmentTextQ::Reader dataQ = dataPtrQ->getAs <FcMsg::GetFragmentTextQ>();
 
     FcMsg::Reference::Reader fromReference = dataQ.getFromReference();
+    // TODO: avoid make copy of cStr()
     std::string              fromOsisBookIdStr(fromReference.getBookId().cStr());
     SharedString             fromOsisBookId = makeSharedString(fromOsisBookIdStr);
 //      SharedString fromOsisBookId = makeSharedString(fromReference.getBookId().cStr());
@@ -61,6 +69,7 @@ namespace fcore
     WordIdInt fromWordId = TextId::getWordId(52, fromChapterId, fromVerseId, fromWordInVerseId);
 
     FcMsg::Reference::Reader toReference = dataQ.getToReference();
+    // TODO: avoid make copy of cStr()
     std::string              toOsisBookIdStr(toReference.getBookId().cStr());
     SharedString             toOsisBookId = makeSharedString(toOsisBookIdStr);
 //      SharedString toOsisBookId = makeSharedString(toReference.getBookId().cStr());

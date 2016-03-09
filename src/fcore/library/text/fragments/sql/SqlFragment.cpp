@@ -29,11 +29,14 @@ namespace fcore
   SqlFragment::~SqlFragment() {}
 
 
-  const SharedString SqlFragment::getCreateTableSql() const
-  {
-    std::stringstream sql;
-    sql << "CREATE TABLE IF NOT EXISTS " << *getModuleId();
-    sql << "(" << SqlTextConstants::FIELD_ID << " INTEGER PRIMARY KEY)";
-    return (makeSharedString(sql.str()));
-  }
+//  const SharedString SqlFragment::getCreateTableSql() const  // TODO: remove it
+//  {
+//    SharedString sql = makeSharedString();
+//    *sql += "CREATE TABLE IF NOT EXISTS ";
+//    *sql += *getModuleId();
+//    *sql += "(";
+//    *sql += SqlTextConstants::FIELD_ID;
+//    *sql += " INTEGER PRIMARY KEY)";
+//    return (sql);
+//  }
 }  // namespace fcore

@@ -41,6 +41,6 @@ namespace fcore
     // set the reply type and data
     msgPtrR->setMsgType(FcConst::MSG_TYPE_ERROR);
     msgPtrR->setErrorFlag(true);
-    msgPtrR->setMsgText(errorMsg);
+    msgPtrR->setMsgText(errorMsg); // TODO: avoid make copy of errorMsg
   }  // SendErrorMsg::dataWorker
 }  // namespace fcore

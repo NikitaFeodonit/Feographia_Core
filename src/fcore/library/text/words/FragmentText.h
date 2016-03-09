@@ -29,17 +29,8 @@
 
 namespace fcore
 {
-  using SharedWord = std::shared_ptr <Word>;
   using PairIdWord = std::pair <WordIdInt, SharedWord>;
   using SharedWordMap = std::shared_ptr <std::map <WordIdInt, SharedWord> >;
-
-
-  // http://stackoverflow.com/a/13196986
-  template <typename ... Args>
-  SharedWord makeSharedWord(Args&& ... args)
-  {
-    return (std::make_shared <Word>(std::forward <Args>(args) ...));
-  }
 
 
   template <typename ... Args>
@@ -55,8 +46,8 @@ namespace fcore
     explicit FragmentText();
 
     virtual const SharedWordMap getFragmentText(
-        WordIdInt fromWordId,
-        WordIdInt toWordId) const = 0;
+        const WordIdInt& fromWordId,
+        const WordIdInt& toWordId) const = 0;
   };
 }  // namespace fcore
 
