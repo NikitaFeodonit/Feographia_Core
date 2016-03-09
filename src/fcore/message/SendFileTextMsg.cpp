@@ -29,7 +29,7 @@
 
 namespace fcore
 {
-  boost::shared_ptr <char[]> getFileText(std::string& filePath)
+  boost::shared_ptr <char[]> getFileText(const std::string& filePath)
   {
     auto file = boost::make_shared <std::ifstream>(filePath,
         std::ios::in | std::ios::binary | std::ios::ate);

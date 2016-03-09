@@ -54,9 +54,9 @@ namespace fcore
     static const WordIdInt getToWordId(FragmentIdInt fragmentId);
 
     static const WordIdInt getWordId(
-        BookIdInt        bookId,
-        ChapterIdInt     chapterId,
-        VerseIdInt       verseId,
+        BookIdInt bookId,
+        ChapterIdInt chapterId,
+        VerseIdInt verseId,
         WordInVerseIdInt wordInVerseId);
 
     static const FragmentIdInt getWordId(
@@ -75,13 +75,12 @@ namespace fcore
       static const int FRAGMENT = sizeof(FragmentIdInt) * 8;
     };
 
-
     struct IdMask
     {
       static const WordIdInt WORD_IN_VERSE = ~(~0u << SizeOfIdInt::WORD_IN_VERSE);
       static const WordIdInt VERSE = ~(~0u << SizeOfIdInt::VERSE) << SizeOfIdInt::WORD_IN_VERSE;
-      static const WordIdInt CHAPTER = (~(~0u << (SizeOfIdInt::CHAPTER)))
-          << (SizeOfIdInt::VERSE + SizeOfIdInt::WORD_IN_VERSE);
+      static const WordIdInt CHAPTER =
+          (~(~0u << (SizeOfIdInt::CHAPTER))) << (SizeOfIdInt::VERSE + SizeOfIdInt::WORD_IN_VERSE);
       static const WordIdInt BOOK = (~(~0u << (SizeOfIdInt::BOOK)))
           << (SizeOfIdInt::CHAPTER + SizeOfIdInt::VERSE + SizeOfIdInt::WORD_IN_VERSE);
 
@@ -99,20 +98,20 @@ namespace fcore
 
   inline const VerseIdInt TextId::getVerseId(WordIdInt wordId)
   {
-    return (static_cast <VerseIdInt>((wordId& IdMask::VERSE) >> SizeOfIdInt::WORD_IN_VERSE));
+    return (static_cast <VerseIdInt>((wordId & IdMask::VERSE) >> SizeOfIdInt::WORD_IN_VERSE));
   }
 
 
   inline const ChapterIdInt TextId::getChapterId(WordIdInt wordId)
   {
-    return (static_cast <ChapterIdInt>((wordId& IdMask::CHAPTER)
+    return (static_cast <ChapterIdInt>((wordId & IdMask::CHAPTER)
         >> (SizeOfIdInt::VERSE + SizeOfIdInt::WORD_IN_VERSE)));
   }
 
 
   inline const BookIdInt TextId::getBookId(WordIdInt wordId)
   {
-    return (static_cast <BookIdInt>((wordId& IdMask::BOOK)
+    return (static_cast <BookIdInt>((wordId & IdMask::BOOK)
         >> (SizeOfIdInt::CHAPTER + SizeOfIdInt::VERSE + SizeOfIdInt::WORD_IN_VERSE)));
   }
 
@@ -125,14 +124,14 @@ namespace fcore
 
   inline const WordIdInt TextId::getToWordId(FragmentIdInt fragmentId)
   {
-    return (static_cast <WordIdInt>((fragmentId& IdMask::TO_WORD) >> SizeOfIdInt::WORD));
+    return (static_cast <WordIdInt>((fragmentId & IdMask::TO_WORD) >> SizeOfIdInt::WORD));
   }
 
 
   inline const WordIdInt TextId::getWordId(
-      BookIdInt        bookId,
-      ChapterIdInt     chapterId,
-      VerseIdInt       verseId,
+      BookIdInt bookId,
+      ChapterIdInt chapterId,
+      VerseIdInt verseId,
       WordInVerseIdInt wordInVerseId)
   {
     WordIdInt wordId = bookId;
