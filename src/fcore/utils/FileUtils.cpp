@@ -32,6 +32,9 @@ namespace fcore
 
   SharedString FileUtils::getFileContents(SharedString pFilePath)
   {
+    // http://insanecoding.blogspot.ru/2011/11/how-to-read-in-file-in-c.html
+    // http://insanecoding.blogspot.ru/2011/11/reading-in-entire-file-at-once-in-c.html
+    // http://stackoverflow.com/a/525103
     std::ifstream in(*pFilePath, std::ios::in | std::ios::binary);
     if (in) {
       SharedString contents = makeSharedString();

@@ -53,7 +53,7 @@ namespace fcore
   }
 
 
-  void SqlModule::createTables() const
+  void SqlModule::createTables()
   {
     try {
       std::string sql;
@@ -69,6 +69,7 @@ namespace fcore
       getDatabase()->exec(*mpText->getCreateTableSql());
 
       setTablesDatabase();
+      createWordInsertStatement();
 
     } catch (std::exception& e) {
       std::string errMsg = "SQLite exception: " + std::string(e.what());
@@ -133,7 +134,6 @@ namespace fcore
 
     SQLite::Transaction transaction(*createDatabase());
     createTables();
-    createWordInsertStatement();
 
     int cnt = 0;
 

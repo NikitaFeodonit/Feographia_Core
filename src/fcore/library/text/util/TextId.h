@@ -37,7 +37,9 @@ namespace fcore
   using ChapterIdInt = std::uint8_t;        // max 150 per book
   using BookIdInt = std::uint8_t;           // max  77 per module
   using WordIdInt = std::uint32_t;
-  using FragmentIdInt = std::uint64_t;      // BookIdInt must be < 128 for cast to signed INTEGER of sqlite
+  using FragmentIdInt = std::uint64_t;
+  // BookIdInt must be < 128 for cast to signed INTEGER of sqlite
+  // see also http://stackoverflow.com/a/21121697
 
 
   class TextId

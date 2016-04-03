@@ -40,7 +40,7 @@ namespace fcore
     const SharedSQLiteDatabase getDatabase() const;
     bool isReadwriteDatabase() const;
 
-    virtual void createTables() const;
+    virtual void createTables();
     virtual void setTablesDatabase() const;
     virtual const int insertWord(
         const WordIdInt wordId,
