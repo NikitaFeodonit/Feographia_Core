@@ -28,7 +28,7 @@ using Java = import "/capnp/java.capnp";
 $Java.package("ru.feographia.capnproto");
 $Java.outerClassname("FcMsg");
 
-using FcConst = import "FcConst.capnp";
+using FcConst = import "/FcConst.capnp";
 
 
 struct Message
